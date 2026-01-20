@@ -13,13 +13,16 @@
 # License:     MIT License
 #-----------------------------------------------------------------------------
 
+import time 
+import math
+import numpy as np
+
 import wx
 import wx.glcanvas as glcanvas
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
-import numpy as np
-import math
+
 
 class RobotArm:
     def __init__(self):
@@ -195,7 +198,7 @@ class GLCanvas(glcanvas.GLCanvas):
             
             glColor3f(*colors[i])
             self.DrawSegment(p1, p2, 0.1)
-            print(p2)
+            #print(p2)
             
             # Draw joint sphere
             glPushMatrix()
@@ -274,6 +277,13 @@ class GLCanvas(glcanvas.GLCanvas):
         glLineWidth(1)
         glEnable(GL_LIGHTING)
     
+    def updateCubeZ(self):
+        if self.cube.z > self.cube.size/2: 
+            self.cube.z -= 0.1
+        elif self.cube.z < self.cube.size/2:
+            self.cube.z =self.cube.size/2
+
+
     def DrawCube(self):
         glPushMatrix()
         glTranslatef(self.cube.x, self.cube.y, self.cube.z)
@@ -339,6 +349,7 @@ class GLCanvas(glcanvas.GLCanvas):
         
         # Get gripper orientation
         yaw, pitch, roll = self.robot.get_gripper_orientation()
+        print((yaw, pitch, roll))
         glRotatef(yaw, 0, 0, 1)
         glRotatef(pitch, 0, 1, 0)
         glRotatef(roll, 0, 0, 1)  # Add roll rotation
@@ -573,9 +584,26 @@ class RobotArmFrame(wx.Frame):
         
         panel.SetSizer(main_sizer)
         
+        self.updateLock = False 
+        self.lastPeriodicTime = time.time()
+        self.timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.periodic)
+        self.timer.Start(500)
+
+        
         self.UpdatePosition()
         self.Centre()
     
+    def periodic(self, event):
+        """ Call back every periodic time."""
+        now = time.time()
+        if (not self.updateLock) and now - self.lastPeriodicTime >= 1:
+            print("periodic(): main frame update at %s" % str(now))
+            self.lastPeriodicTime = now
+            self.canvas.updateCubeZ()
+            self.canvas.Refresh()
+            # update the manager.
+
     def OnSlider(self, event):
         self.robot.theta1 = self.slider1.GetValue()
         self.robot.theta2 = self.slider2.GetValue()

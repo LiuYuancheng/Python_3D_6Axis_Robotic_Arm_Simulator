@@ -12,3 +12,6 @@ This module is a simple simulator for a robotic arm by using the wxPython and Op
 # License:     MIT License
 ```
 
+The Idea is from this video:
+
+https://youtu.be/zG4QcdsL4rM?si=WMlkdku4BwK09EiY
