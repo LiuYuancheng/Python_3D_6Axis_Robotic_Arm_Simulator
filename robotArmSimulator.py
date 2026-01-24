@@ -13,7 +13,7 @@
 # License:     MIT License
 #-----------------------------------------------------------------------------
 
-import time 
+import time
 import math
 import numpy as np
 
@@ -23,7 +23,8 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
-
+#-----------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
 class RobotArm:
     def __init__(self):
         # Link lengths
@@ -31,7 +32,6 @@ class RobotArm:
         self.l2 = 1.5  # Shoulder to elbow
         self.l3 = 1.0  # Elbow to wrist
         self.l4 = 0.5  # Wrist to gripper
-        
         # Joint angles (in degrees)
         self.theta1 = 45.0   # Base rotation
         self.theta2 = 45.0  # Shoulder
@@ -39,38 +39,32 @@ class RobotArm:
         self.theta4 = 0.0   # Wrist
         self.theta5 = 0.0   # Gripper rotation
         self.gripper_open = 50.0  # Gripper opening (0-100)
-        
         # Gripper state
         self.gripper_closed = False
         self.holding_cube = False
     
-    def forward_kinematics(self):
-        """Calculate the position of each joint"""
+    #-----------------------------------------------------------------------------
+    def forwardKinematics(self):
+        """Calculate the position of each joint based on the current joint angles"""
         t1 = math.radians(self.theta1)  # Negate for correct rotation direction
         t2 = math.radians(self.theta2)
         t3 = math.radians(self.theta3)
         t4 = math.radians(self.theta4)
-        
-        # Base
+        # Base pos
         p0 = [0, 0, 0]
-        
         # Joint 1
         p1 = [0, 0, self.l1]
-        
         # Joint 2 (shoulder) - fixed rotation
         x2 = self.l2 * math.cos(-t1) * math.cos(t2)
         y2 = self.l2 * math.sin(-t1) * math.cos(t2)
         z2 = self.l1 + self.l2 * math.sin(t2)
         p2 = [x2, -y2, z2]
-        #p2 = [1, 1, 1]
-        
         # Joint 3 (elbow)
         angle_sum_23 = t2 + t3
         x3 = math.cos(t1) * (self.l2 * math.cos(t2) + self.l3 * math.cos(angle_sum_23))
         y3 = math.sin(t1) * (self.l2 * math.cos(t2) + self.l3 * math.cos(angle_sum_23))
         z3 = self.l1 + self.l2 * math.sin(t2) + self.l3 * math.sin(angle_sum_23)
         p3 = [x3, y3, z3]
-        
         # End effector (gripper position)
         angle_sum_234 = t2 + t3 + t4
         x4 = math.cos(t1) * (self.l2 * math.cos(t2) + self.l3 * math.cos(angle_sum_23) + self.l4 * math.cos(angle_sum_234))
@@ -80,41 +74,38 @@ class RobotArm:
         
         return [p0, p1, p2, p3, p4]
     
-    def get_gripper_orientation(self):
+    #-----------------------------------------------------------------------------
+    def getGripperOrientation(self):
         """Get the orientation angles for the gripper"""
-        t1 = math.radians(self.theta1)  # Negated for correct rotation
-        t2 = math.radians(self.theta2)
-        t3 = math.radians(self.theta3)
-        t4 = math.radians(self.theta4)
-        
-        # Calculate gripper orientation
-        pitch = math.degrees(t2 + t3 + t4)  # Pitch angle
-        yaw = self.theta1  # Yaw angle (already correct now)
+        # Gripper always points down, so we set pitch to -90 degrees
+        pitch = 180  # Always point down
+        yaw = self.theta1  # Yaw angle (base rotation)
         roll = self.theta5  # Roll angle for gripper rotation
-        
         return yaw, pitch, roll
 
-
+#-----------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
 class Cube:
     def __init__(self, x, y, z, size=0.3):
         self.x = x
         self.y = y
         self.z = z
         self.size = size
-        self.original_pos = [x, y, z]
+        self.originalPos = [x, y, z]
     
     def reset(self):
-        self.x, self.y, self.z = self.original_pos
+        self.x, self.y, self.z = self.originalPos
     
-    def get_position(self):
+    def getPosition(self):
         return [self.x, self.y, self.z]
     
-    def set_position(self, x, y, z):
+    def setPosition(self, x, y, z):
         self.x = x
         self.y = y
         self.z = z
 
-
+#-----------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
 class GLCanvas(glcanvas.GLCanvas):
     def __init__(self, parent, robot, cube):
         glcanvas.GLCanvas.__init__(self, parent, -1)
@@ -127,13 +118,14 @@ class GLCanvas(glcanvas.GLCanvas):
         self.distance = 10
         self.last_x = 0
         self.last_y = 0
-        
+        # bind the event
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_SIZE, self.OnSize)
         self.Bind(wx.EVT_LEFT_DOWN, self.OnMouseDown)
         self.Bind(wx.EVT_MOTION, self.OnMouseMotion)
         self.Bind(wx.EVT_MOUSEWHEEL, self.OnMouseWheel)
     
+    #-----------------------------------------------------------------------------
     def InitGL(self):
         self.SetCurrent(self.context)
         glClearColor(0.95, 0.95, 0.95, 1.0)
@@ -142,18 +134,15 @@ class GLCanvas(glcanvas.GLCanvas):
         glEnable(GL_LIGHT0)
         glEnable(GL_COLOR_MATERIAL)
         glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE)
-        
         # Light position
         glLightfv(GL_LIGHT0, GL_POSITION, [5, 5, 10, 1])
         glLightfv(GL_LIGHT0, GL_AMBIENT, [0.3, 0.3, 0.3, 1])
         glLightfv(GL_LIGHT0, GL_DIFFUSE, [0.8, 0.8, 0.8, 1])
-        
         self.init = True
     
+    #-----------------------------------------------------------------------------
     def OnPaint(self, event):
-        if not self.init:
-            self.InitGL()
-        
+        if not self.init: self.InitGL()
         self.SetCurrent(self.context)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         
@@ -172,16 +161,14 @@ class GLCanvas(glcanvas.GLCanvas):
         self.DrawScene()
         self.SwapBuffers()
     
+    #-----------------------------------------------------------------------------
     def DrawScene(self):
         # Draw grid
         self.DrawGrid()
-        
         # Draw cube
         self.DrawCube()
-        
         # Draw robot arm
-        positions = self.robot.forward_kinematics()
-        
+        positions = self.robot.forwardKinematics()
         # Draw base
         glPushMatrix()
         glColor3f(0.5, 0.5, 0.5)
@@ -191,7 +178,6 @@ class GLCanvas(glcanvas.GLCanvas):
         
         # Draw arm segments
         colors = [(1, 0, 0), (0, 1, 0), (0, 0, 1), (1, 1, 0)]
-        
         for i in range(len(positions) - 1):
             p1 = positions[i]
             p2 = positions[i + 1]
@@ -199,19 +185,16 @@ class GLCanvas(glcanvas.GLCanvas):
             glColor3f(*colors[i])
             self.DrawSegment(p1, p2, 0.1)
             #print(p2)
-            
             # Draw joint sphere
             glPushMatrix()
             glTranslatef(*p2)
             self.DrawSphere(0.15)
             glPopMatrix()
         
-
-        #self.DrawSegment([1,1,1], [2,2,2], 0.1)
-
         # Draw gripper
         self.DrawGripper(positions[-1])
     
+    #-----------------------------------------------------------------------------
     def DrawGrid(self):
         glDisable(GL_LIGHTING)
         glColor3f(0.7, 0.7, 0.7)
@@ -257,7 +240,6 @@ class GLCanvas(glcanvas.GLCanvas):
                 glVertex3f(x, y + 0.1, 0.02)
                 glEnd()
 
-
         # Draw axes
         glLineWidth(5)
         glBegin(GL_LINES)
@@ -277,13 +259,14 @@ class GLCanvas(glcanvas.GLCanvas):
         glLineWidth(1)
         glEnable(GL_LIGHTING)
     
+    #-----------------------------------------------------------------------------
     def updateCubeZ(self):
         if self.cube.z > self.cube.size/2: 
             self.cube.z -= 0.1
         elif self.cube.z < self.cube.size/2:
             self.cube.z =self.cube.size/2
 
-
+    #-----------------------------------------------------------------------------
     def DrawCube(self):
         glPushMatrix()
         glTranslatef(self.cube.x, self.cube.y, self.cube.z)
@@ -343,12 +326,13 @@ class GLCanvas(glcanvas.GLCanvas):
         
         glPopMatrix()
     
+    #-----------------------------------------------------------------------------
     def DrawGripper(self, position):
         glPushMatrix()
         glTranslatef(*position)
         
         # Get gripper orientation
-        yaw, pitch, roll = self.robot.get_gripper_orientation()
+        yaw, pitch, roll = self.robot.getGripperOrientation()
         print((yaw, pitch, roll))
         glRotatef(yaw, 0, 0, 1)
         glRotatef(pitch, 0, 1, 0)
@@ -362,7 +346,7 @@ class GLCanvas(glcanvas.GLCanvas):
         opening = self.robot.gripper_open / 100.0 * 0.2  # Max 0.2 units
         
         # Draw gripper fingers
-        glColor3f(0.2, 0.2, 0.2)
+        glColor3f(0, 0, 0)
         
         # Left finger
         glPushMatrix()
@@ -380,6 +364,7 @@ class GLCanvas(glcanvas.GLCanvas):
         
         glPopMatrix()
     
+    #-----------------------------------------------------------------------------
     def DrawBox(self):
         glBegin(GL_QUADS)
         # Front
@@ -613,9 +598,9 @@ class RobotArmFrame(wx.Frame):
         
         # Update cube position if holding
         if self.robot.holding_cube:
-            positions = self.robot.forward_kinematics()
+            positions = self.robot.forwardKinematics()
             gripper_pos = positions[-1]
-            self.cube.set_position(gripper_pos[0], gripper_pos[1], gripper_pos[2])
+            self.cube.setPosition(gripper_pos[0], gripper_pos[1], gripper_pos[2])
         
         self.UpdatePosition()
         self.canvas.Refresh()
@@ -625,9 +610,9 @@ class RobotArmFrame(wx.Frame):
         self.canvas.Refresh()
     
     def OnGrabCube(self, event):
-        positions = self.robot.forward_kinematics()
+        positions = self.robot.forwardKinematics()
         gripper_pos = positions[-1]
-        cube_pos = self.cube.get_position()
+        cube_pos = self.cube.getPosition()
         
         # Calculate distance between gripper and cube
         distance = math.sqrt(
@@ -639,7 +624,7 @@ class RobotArmFrame(wx.Frame):
         # Check if gripper is close enough and closed enough
         if distance < 1 and self.robot.gripper_open < 30:
             self.robot.holding_cube = True
-            self.cube.set_position(gripper_pos[0], gripper_pos[1], gripper_pos[2])
+            self.cube.setPosition(gripper_pos[0], gripper_pos[1], gripper_pos[2])
             self.grab_btn.Enable(False)
             self.release_btn.Enable(True)
             self.status_text.SetLabel("Status: Holding cube")
@@ -658,11 +643,11 @@ class RobotArmFrame(wx.Frame):
         self.canvas.Refresh()
     
     def UpdatePosition(self):
-        positions = self.robot.forward_kinematics()
+        positions = self.robot.forwardKinematics()
         end_pos = positions[-1]
         self.pos_text.SetLabel(f"X: {end_pos[0]:.2f}\nY: {end_pos[1]:.2f}\nZ: {end_pos[2]:.2f}")
         
-        cube_pos = self.cube.get_position()
+        cube_pos = self.cube.getPosition()
         self.cube_text.SetLabel(f"X: {cube_pos[0]:.2f}\nY: {cube_pos[1]:.2f}\nZ: {cube_pos[2]:.2f}")
     
     def OnReset(self, event):
