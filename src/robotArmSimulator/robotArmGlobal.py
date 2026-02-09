@@ -79,3 +79,17 @@ gArmBaseLen = 2.0
 gArmShoulderLen = 1.5
 gArmElbowLen = 1.0
 gArmWristLen = 0.5
+# 
+gMotoAngle1 = 45.0
+gMotoAngle2 = -15.0
+gMotoAngle3 = 30.0
+gMotoAngle4 = 0.0
+gMotoAngle5 = 0.0
+gMotoAngle6 = 50.0
+
+gMotorDegSpeed = 5 # The moving speed of the motor.
+
+# Cube position in the canvas
+gCubePosX = 2.0
+gCubePosY = 1.0
+gCubePosZ = 0.3

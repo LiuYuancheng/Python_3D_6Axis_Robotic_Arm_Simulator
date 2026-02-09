@@ -31,7 +31,7 @@ class RobotArmFrame(wx.Frame):
         wx.Frame.__init__(self, None, title=gv.UI_TITLE, size=FRAME_SIZE)
         
         self.robot = agents.RobotArm()
-        self.cube =agents.Cube(2.0, 1.0, 0.3)  # Position cube near the arm
+        self.cube =agents.Cube(gv.gCubePosX, gv.gCubePosY, gv.gCubePosZ)  # Position cube near the arm
         
         # Create main panel
         panel = wx.Panel(self)

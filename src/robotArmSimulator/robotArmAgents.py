@@ -58,17 +58,17 @@ class RobotArm(object):
     def __init__(self):
         # Define all the public variables:
         # Link lengths
-        self.l1 = gv.gArmBaseLen # Base to shoulder
-        self.l2 = gv.gArmShoulderLen  # Shoulder to elbow
-        self.l3 = gv.gArmElbowLen  # Elbow to wrist
-        self.l4 = gv.gArmWristLen  # Wrist to gripper
+        self.l1 = gv.gArmBaseLen        # Base to shoulder
+        self.l2 = gv.gArmShoulderLen    # Shoulder to elbow
+        self.l3 = gv.gArmElbowLen       # Elbow to wrist
+        self.l4 = gv.gArmWristLen       # Wrist to gripper
         # Joint angles (in degrees)
-        self.theta1 = 45.0   # Base rotation
-        self.theta2 = -15.0  # Shoulder
-        self.theta3 = 30.0  # Elbow
-        self.theta4 = 0.0   # Wrist
-        self.theta5 = 0.0   # Gripper rotation
-        self.gripper_open = 50.0  # Gripper opening (0-100)
+        self.theta1 = gv.gMotoAngle1    # Base rotation
+        self.theta2 = gv.gMotoAngle2    # Shoulder
+        self.theta3 = gv.gMotoAngle3    # Elbow
+        self.theta4 = gv.gMotoAngle4    # Wrist
+        self.theta5 = gv.gMotoAngle5    # Gripper rotation
+        self.gripper_open = gv.gMotoAngle6  # Gripper opening (0-100)
         # Gripper state
         self.gripper_closed = False
         self.holding_cube = False
