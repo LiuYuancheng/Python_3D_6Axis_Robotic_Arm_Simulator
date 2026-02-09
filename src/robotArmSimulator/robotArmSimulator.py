@@ -8,7 +8,7 @@
 # Author:      Yuancheng Liu
 #
 # Created:     2026/01/20
-# Version:     v_0.0.1
+# Version:     v_0.0.3
 # Copyright:   Copyright (c) 2026 LiuYuancheng
 # License:     MIT License
 #-----------------------------------------------------------------------------
@@ -18,17 +18,17 @@ import math
 import numpy as np
 
 import wx
-
-
+import robotArmGlobal as gv
 import robotArmAgents as agents
 
-#-----------------------------------------------------------------------------
-#-----------------------------------------------------------------------------
+FRAME_SIZE = (1100, 800)
 
+#-----------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
 
 class RobotArmFrame(wx.Frame):
     def __init__(self):
-        wx.Frame.__init__(self, None, title="3D Robot Arm Simulation with Gripper", size=(1100, 750))
+        wx.Frame.__init__(self, None, title=gv.UI_TITLE, size=FRAME_SIZE)
         
         self.robot = agents.RobotArm()
         self.cube =agents.Cube(2.0, 1.0, 0.3)  # Position cube near the arm
@@ -138,7 +138,6 @@ class RobotArmFrame(wx.Frame):
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.periodic)
         self.timer.Start(500)
-
         
         self.UpdatePosition()
         self.Centre()
@@ -230,7 +229,8 @@ class RobotArmFrame(wx.Frame):
         
         self.OnSlider(None)
 
-
+#-----------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
 if __name__ == '__main__':
     app = wx.App(False)
     frame = RobotArmFrame()

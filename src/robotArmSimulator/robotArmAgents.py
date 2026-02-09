@@ -179,9 +179,11 @@ class GLCanvas(glcanvas.GLCanvas):
         positions = self.robot.forwardKinematics()
         # Draw base area identify the max range the robot can reach
         glPushMatrix()
-        glColor3f(0.5, 0.5, 0.5)
+        glColor3f(0, 0.8, 0)
         glTranslatef(0, 0, 0)
-        self.DrawCylinder(1, 0.05)
+        # Draw the area the robot can reach
+        #self.DrawCylinder(1, 0.05)
+        self.DrawCylinder(2.4, 0.05)
         glPopMatrix()
         # Draw arm segments
         colors = [(1, 0, 0), (0, 1, 0), (0, 0, 1), (1, 1, 0)]
