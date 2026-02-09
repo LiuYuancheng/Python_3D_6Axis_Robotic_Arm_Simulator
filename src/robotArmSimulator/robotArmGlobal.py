@@ -73,6 +73,9 @@ def gDebugPrint(msg, prt=True, logType=None):
     elif logType == LOG_INFO or DEBUG_FLG:
         Log.info(msg)
 
+OPCUA_PORT = int(CONFIG_DICT['OPCUA_PORT'])
+
+
 gCanvasBgColor = (0.15, 0.15, 0.15, 1.0)
 # Arm Link lengths
 gArmBaseLen = 2.0
@@ -93,3 +96,8 @@ gMotorDegSpeed = 5 # The moving speed of the motor.
 gCubePosX = 2.0
 gCubePosY = 1.0
 gCubePosZ = 0.3
+
+#-------</GLOBAL VARIABLES (start with "g")>------------------------------------
+iRobotArmObj = None
+iCubeObj = None
+iCtrlManager = None

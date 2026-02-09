@@ -13,6 +13,7 @@
 # License:     MIT License
 #-----------------------------------------------------------------------------
 
+import time
 import asyncio
 import threading
 import robotArmGlobal as gv
@@ -69,6 +70,10 @@ class opcuaServerThread(threading.Thread):
         await self.server.addVariable(idx, OBJ_NAME, M_TARGET4_ID, gv.gMotoAngle4)
         await self.server.addVariable(idx, OBJ_NAME, M_TARGET5_ID, gv.gMotoAngle5)
         await self.server.addVariable(idx, OBJ_NAME, M_TARGET6_ID, gv.gMotoAngle6)
+        # Add the cube position variables
+        await self.server.addVariable(idx, OBJ_NAME, CUBE_POS_X, gv.gCubePosX)
+        await self.server.addVariable(idx, OBJ_NAME, CUBE_POS_Y, gv.gCubePosY)
+        await self.server.addVariable(idx, OBJ_NAME, CUBE_POS_Z, gv.gCubePosZ)
         return True
 
     def getServer(self):
@@ -84,9 +89,11 @@ class opcuaServerThread(threading.Thread):
 
 #-----------------------------------------------------------------------------
 #-----------------------------------------------------------------------------
-class robotArmCtrlMgr(object):
+class robotArmCtrlMgr(threading.Thread):
 
     def __init__(self):
+        threading.Thread.__init__(self)
+        self.opcuaServerTh = opcuaServerThread(gv.OPCUA_PORT)
         # Current sensor value
         self.motor1Sensor = gv.gMotoAngle1
         self.motor2Sensor = gv.gMotoAngle2
@@ -101,4 +108,39 @@ class robotArmCtrlMgr(object):
         self.motor4Angle = gv.gMotoAngle4
         self.motor5Angle = gv.gMotoAngle5
         self.motor6Angle = gv.gMotoAngle6
+        # 
+        self.terminate = False
+
+    #-----------------------------------------------------------------------------
+    async def controlLoop(self):
+        await self.opcuaServerTh.initDataStorage()
+        self.opcuaServerTh.start()
+        time.sleep(1)
+        while not self.terminate:
+            # get the sensor value from the robot arm
+            self.motor1Sensor = gv.iRobotArmObj.theta1
+            self.motor2Sensor = gv.iRobotArmObj.theta2
+            self.motor3Sensor = gv.iRobotArmObj.theta3
+            self.motor4Sensor = gv.iRobotArmObj.theta4
+            self.motor5Sensor = gv.iRobotArmObj.theta5
+            self.motor6Sensor = gv.iRobotArmObj.gripper_open
+            # update the sensor value
+            await self.opcuaServerTh.getServer().updateVariable(M_SENSOR1_ID, self.motor1Sensor)
+            await self.opcuaServerTh.getServer().updateVariable(M_SENSOR2_ID, self.motor2Sensor)
+            await self.opcuaServerTh.getServer().updateVariable(M_SENSOR3_ID, self.motor3Sensor)
+            await self.opcuaServerTh.getServer().updateVariable(M_SENSOR4_ID, self.motor4Sensor)
+            await self.opcuaServerTh.getServer().updateVariable(M_SENSOR5_ID, self.motor5Sensor)
+            await self.opcuaServerTh.getServer().updateVariable(M_SENSOR6_ID, self.motor6Sensor)
+            # update the targe value
+            self.motor1Angle = await self.opcuaServerTh.getServer().getVariableVal(M_TARGET1_ID)
+            self.motor2Angle = await self.opcuaServerTh.getServer().getVariableVal(M_TARGET2_ID)
+            self.motor3Angle = await self.opcuaServerTh.getServer().getVariableVal(M_TARGET3_ID)
+            self.motor4Angle = await self.opcuaServerTh.getServer().getVariableVal(M_TARGET4_ID)
+            self.motor5Angle = await self.opcuaServerTh.getServer().getVariableVal(M_TARGET5_ID)
+            self.motor6Angle = await self.opcuaServerTh.getServer().getVariableVal(M_TARGET6_ID)
+            # update the cube position
+
+    def run(self):
+        gv.gDebugPrint("Robot arm control manager thread start.", logType=gv.LOG_INFO)
+        asyncio.run(self.controlLoop())
 

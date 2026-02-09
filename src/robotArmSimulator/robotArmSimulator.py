@@ -20,6 +20,7 @@ import numpy as np
 import wx
 import robotArmGlobal as gv
 import robotArmAgents as agents
+import robotArmCtrlMgr as ctrlMgr
 
 FRAME_SIZE = (1100, 800)
 
@@ -30,15 +31,15 @@ class RobotArmFrame(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None, title=gv.UI_TITLE, size=FRAME_SIZE)
         
-        self.robot = agents.RobotArm()
-        self.cube =agents.Cube(gv.gCubePosX, gv.gCubePosY, gv.gCubePosZ)  # Position cube near the arm
-        
+        gv.iRobotArmObj = agents.RobotArm()
+        gv.iCubeObj =agents.Cube(gv.gCubePosX, gv.gCubePosY, gv.gCubePosZ)  # Position cube near the arm
+        gv.iCtrlManager = ctrlMgr.robotArmCtrlMgr()
         # Create main panel
         panel = wx.Panel(self)
         main_sizer = wx.BoxSizer(wx.HORIZONTAL)
         
         # Create OpenGL canvas
-        self.canvas = agents.GLCanvas(panel, self.robot, self.cube)
+        self.canvas = agents.GLCanvas(panel, gv.iRobotArmObj, gv.iCubeObj)
         
         # Create control panel
         control_panel = wx.Panel(panel)
@@ -141,6 +142,8 @@ class RobotArmFrame(wx.Frame):
         
         self.UpdatePosition()
         self.Centre()
+        gv.iCtrlManager.start()
+
     
     def periodic(self, event):
         """ Call back every periodic time."""
@@ -153,29 +156,29 @@ class RobotArmFrame(wx.Frame):
             # update the manager.
 
     def OnSlider(self, event):
-        self.robot.theta1 = self.slider1.GetValue()
-        self.robot.theta2 = self.slider2.GetValue()
-        self.robot.theta3 = self.slider3.GetValue()
-        self.robot.theta4 = self.slider4.GetValue()
-        self.robot.theta5 = self.slider5.GetValue()
+        gv.iRobotArmObj.theta1 = self.slider1.GetValue()
+        gv.iRobotArmObj.theta2 = self.slider2.GetValue()
+        gv.iRobotArmObj.theta3 = self.slider3.GetValue()
+        gv.iRobotArmObj.theta4 = self.slider4.GetValue()
+        gv.iRobotArmObj.theta5 = self.slider5.GetValue()
         
         # Update cube position if holding
-        if self.robot.holding_cube:
-            positions = self.robot.forwardKinematics()
+        if gv.iRobotArmObj.holding_cube:
+            positions = gv.iRobotArmObj.forwardKinematics()
             gripper_pos = positions[-1]
-            self.cube.setPosition(gripper_pos[0], gripper_pos[1], gripper_pos[2])
+            gv.iCubeObj.setPosition(gripper_pos[0], gripper_pos[1], gripper_pos[2])
         
         self.UpdatePosition()
         self.canvas.Refresh()
     
     def OnGripperSlider(self, event):
-        self.robot.gripper_open = self.gripper_slider.GetValue()
+        gv.iRobotArmObj.gripper_open = self.gripper_slider.GetValue()
         self.canvas.Refresh()
     
     def OnGrabCube(self, event):
-        positions = self.robot.forwardKinematics()
+        positions = gv.iRobotArmObj.forwardKinematics()
         gripper_pos = positions[-1]
-        cube_pos = self.cube.getPosition()
+        cube_pos = gv.iCubeObj.getPosition()
         
         # Calculate distance between gripper and cube
         distance = math.sqrt(
@@ -185,9 +188,9 @@ class RobotArmFrame(wx.Frame):
         )
         
         # Check if gripper is close enough and closed enough
-        if distance < 1 and self.robot.gripper_open < 30:
-            self.robot.holding_cube = True
-            self.cube.setPosition(gripper_pos[0], gripper_pos[1], gripper_pos[2])
+        if distance < 1 and gv.iRobotArmObj.gripper_open < 30:
+            gv.iRobotArmObj.holding_cube = True
+            gv.iCubeObj.setPosition(gripper_pos[0], gripper_pos[1], gripper_pos[2])
             self.grab_btn.Enable(False)
             self.release_btn.Enable(True)
             self.status_text.SetLabel("Status: Holding cube")
@@ -199,18 +202,18 @@ class RobotArmFrame(wx.Frame):
                 self.status_text.SetLabel("Status: Close gripper more!")
     
     def OnReleaseCube(self, event):
-        self.robot.holding_cube = False
+        gv.iRobotArmObj.holding_cube = False
         self.grab_btn.Enable(True)
         self.release_btn.Enable(False)
         self.status_text.SetLabel("Status: Cube released")
         self.canvas.Refresh()
     
     def UpdatePosition(self):
-        positions = self.robot.forwardKinematics()
+        positions = gv.iRobotArmObj.forwardKinematics()
         end_pos = positions[-1]
         self.pos_text.SetLabel(f"X: {end_pos[0]:.2f}\nY: {end_pos[1]:.2f}\nZ: {end_pos[2]:.2f}")
         
-        cube_pos = self.cube.getPosition()
+        cube_pos = gv.iCubeObj.getPosition()
         self.cube_text.SetLabel(f"X: {cube_pos[0]:.2f}\nY: {cube_pos[1]:.2f}\nZ: {cube_pos[2]:.2f}")
     
     def OnReset(self, event):
@@ -221,8 +224,8 @@ class RobotArmFrame(wx.Frame):
         self.slider5.SetValue(0)
         self.gripper_slider.SetValue(50)
         
-        self.robot.holding_cube = False
-        self.cube.reset()
+        gv.iRobotArmObj.holding_cube = False
+        gv.iCubeObj.reset()
         self.grab_btn.Enable(True)
         self.release_btn.Enable(False)
         self.status_text.SetLabel("Status: Reset complete")
