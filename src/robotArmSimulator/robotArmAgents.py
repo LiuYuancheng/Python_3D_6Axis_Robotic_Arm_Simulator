@@ -2,8 +2,8 @@
 #-----------------------------------------------------------------------------
 # Name:        robotArmAgents.py
 #
-# Purpose:     This module is the agent module to define the object used by the 
-#              robot arm simulator.
+# Purpose:     This module incudes all the agent classes to define the visible 
+#              object (Cube, RobotArm, Env) shown in the robot arm simulator.
 #
 # Author:      Yuancheng Liu
 #
@@ -58,10 +58,10 @@ class RobotArm(object):
     def __init__(self):
         # Define all the public variables:
         # Link lengths
-        self.l1 = 2.0  # Base to shoulder
-        self.l2 = 1.5  # Shoulder to elbow
-        self.l3 = 1.0  # Elbow to wrist
-        self.l4 = 0.5  # Wrist to gripper
+        self.l1 = gv.gArmBaseLen # Base to shoulder
+        self.l2 = gv.gArmShoulderLen  # Shoulder to elbow
+        self.l3 = gv.gArmElbowLen  # Elbow to wrist
+        self.l4 = gv.gArmWristLen  # Wrist to gripper
         # Joint angles (in degrees)
         self.theta1 = 45.0   # Base rotation
         self.theta2 = -15.0  # Shoulder
@@ -133,12 +133,14 @@ class GLCanvas(glcanvas.GLCanvas):
         self.Bind(wx.EVT_LEFT_DOWN, self.OnMouseDown)
         self.Bind(wx.EVT_MOTION, self.OnMouseMotion)
         self.Bind(wx.EVT_MOUSEWHEEL, self.OnMouseWheel)
+        gv.gDebugPrint("The Robot Arm Simulator Canvas is created.", logType=gv.LOG_INFO)
     
     #-----------------------------------------------------------------------------
     def InitGL(self):
+        """ Init the openGL scene."""
         self.SetCurrent(self.context)
         #glClearColor(0.95, 0.95, 0.95, 1.0)
-        glClearColor(0.15, 0.15, 0.15, 1.0)
+        glClearColor(gv.gCanvasBgColor[0], gv.gCanvasBgColor[1], gv.gCanvasBgColor[2], gv.gCanvasBgColor[3])
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_LIGHTING)
         glEnable(GL_LIGHT0)
@@ -198,6 +200,7 @@ class GLCanvas(glcanvas.GLCanvas):
     
     #-----------------------------------------------------------------------------
     def DrawGrid(self):
+        """Draw the ground grid."""
         glDisable(GL_LIGHTING)
         glColor3f(0.7, 0.7, 0.7)
         glBegin(GL_LINES)
@@ -207,8 +210,6 @@ class GLCanvas(glcanvas.GLCanvas):
             glVertex3f(-5, i, 0)
             glVertex3f(5, i, 0)
         glEnd()
-        
-        # Draw coordinate labels at grid intersections
         # Draw coordinate markers at grid intersections
         glPointSize(5)
         glBegin(GL_POINTS)
@@ -225,22 +226,22 @@ class GLCanvas(glcanvas.GLCanvas):
         glPointSize(1)
         
         # Draw small coordinate markers with lines
-        for x in range(-5, 6, 2):
-            for y in range(-5, 6, 2):
-                # Draw a small cross at each major grid intersection
-                glBegin(GL_LINES)
-                if x == 0 and y == 0:
-                    glColor3f(0.0, 0.0, 0.0)
-                else:
-                    glColor3f(0.4, 0.4, 0.4)
+        # for x in range(-5, 6, 2):
+        #     for y in range(-5, 6, 2):
+        #         # Draw a small cross at each major grid intersection
+        #         glBegin(GL_LINES)
+        #         if x == 0 and y == 0:
+        #             glColor3f(0.0, 0.0, 0.0)
+        #         else:
+        #             glColor3f(0.4, 0.4, 0.4)
                 
-                # Horizontal line of cross
-                glVertex3f(x - 0.1, y, 0.02)
-                glVertex3f(x + 0.1, y, 0.02)
-                # Vertical line of cross
-                glVertex3f(x, y - 0.1, 0.02)
-                glVertex3f(x, y + 0.1, 0.02)
-                glEnd()
+        #         # Horizontal line of cross
+        #         glVertex3f(x - 0.1, y, 0.02)
+        #         glVertex3f(x + 0.1, y, 0.02)
+        #         # Vertical line of cross
+        #         glVertex3f(x, y - 0.1, 0.02)
+        #         glVertex3f(x, y + 0.1, 0.02)
+        #         glEnd()
 
         # Draw axes
         glLineWidth(5)
@@ -262,26 +263,16 @@ class GLCanvas(glcanvas.GLCanvas):
         glEnable(GL_LIGHTING)
     
     #-----------------------------------------------------------------------------
-    def updateCubeZ(self):
-        if self.cube.z > self.cube.size/2: 
-            self.cube.z -= 0.1
-        elif self.cube.z < self.cube.size/2:
-            self.cube.z =self.cube.size/2
-
-    #-----------------------------------------------------------------------------
     def DrawCube(self):
         glPushMatrix()
         glTranslatef(self.cube.x, self.cube.y, self.cube.z)
-        
         # Different color based on whether it's being held
         if self.robot.holding_cube:
             glColor3f(1.0, 0.5, 0.0)  # Orange when held
         else:
             glColor3f(1.0, 0.8, 0.0)  # Yellow when free
-        
         s = self.cube.size / 2
-        
-        # Draw cube
+        # Draw cube 6 faces
         glBegin(GL_QUADS)
         # Front face
         glNormal3f(0, 0, 1)
@@ -289,35 +280,30 @@ class GLCanvas(glcanvas.GLCanvas):
         glVertex3f(s, -s, s)
         glVertex3f(s, s, s)
         glVertex3f(-s, s, s)
-        
         # Back face
         glNormal3f(0, 0, -1)
         glVertex3f(-s, -s, -s)
         glVertex3f(-s, s, -s)
         glVertex3f(s, s, -s)
         glVertex3f(s, -s, -s)
-        
         # Top face
         glNormal3f(0, 1, 0)
         glVertex3f(-s, s, -s)
         glVertex3f(-s, s, s)
         glVertex3f(s, s, s)
         glVertex3f(s, s, -s)
-        
         # Bottom face
         glNormal3f(0, -1, 0)
         glVertex3f(-s, -s, -s)
         glVertex3f(s, -s, -s)
         glVertex3f(s, -s, s)
         glVertex3f(-s, -s, s)
-        
         # Right face
         glNormal3f(1, 0, 0)
         glVertex3f(s, -s, -s)
         glVertex3f(s, s, -s)
         glVertex3f(s, s, s)
         glVertex3f(s, -s, s)
-        
         # Left face
         glNormal3f(-1, 0, 0)
         glVertex3f(-s, -s, -s)
@@ -325,46 +311,41 @@ class GLCanvas(glcanvas.GLCanvas):
         glVertex3f(-s, s, s)
         glVertex3f(-s, s, -s)
         glEnd()
-        
         glPopMatrix()
     
+    #-----------------------------------------------------------------------------
     def DrawGripper(self, position):
         glPushMatrix()
         glTranslatef(*position)
-        
         # Get gripper orientation
         yaw, pitch, roll = self.robot.getGripperOrientation()
         print((yaw, pitch, roll))
         glRotatef(yaw, 0, 0, 1)
         glRotatef(pitch, 0, 1, 0)
         glRotatef(roll, 0, 0, 1)  # Add roll rotation
-        
         # Draw gripper base
         glColor3f(0.3, 0.3, 0.3)
         self.DrawCylinder(0.08, 0.15)
-        
         # Calculate gripper finger opening
         opening = self.robot.gripper_open / 100.0 * 0.2  # Max 0.2 units
-        
         # Draw gripper fingers
-        glColor3f(0, 0, 0)
-        
+        glColor3f(0.2, 0.2, 0.2)
         # Left finger
         glPushMatrix()
         glTranslatef(-opening, 0, 0.15)
         glScalef(0.03, 0.03, 0.2)
         self.DrawBox()
         glPopMatrix()
-        
         # Right finger
         glPushMatrix()
         glTranslatef(opening, 0, 0.15)
         glScalef(0.03, 0.03, 0.2)
         self.DrawBox()
         glPopMatrix()
-        
+        # Draw gripper palm to the main scene
         glPopMatrix()
     
+    #-----------------------------------------------------------------------------
     def DrawBox(self):
         glBegin(GL_QUADS)
         # Front
@@ -405,37 +386,36 @@ class GLCanvas(glcanvas.GLCanvas):
         glVertex3f(-1, 1, -1)
         glEnd()
     
-
+    #-----------------------------------------------------------------------------
     def DrawSegment(self, p1, p2, radius):
-
-
+        """Draw the arm segment"""
         dx = p2[0] - p1[0]
         dy = p2[1] - p1[1]
         dz = p2[2] - p1[2]
         length = math.sqrt(dx**2 + dy**2 + dz**2)
-        
         glPushMatrix()
         glTranslatef(*p1)
-        
         if length > 0:
             ax = math.degrees(math.atan2(dy, dx))
             ay = math.degrees(math.acos(dz / length))
             glRotatef(ax, 0, 0, 1)
             glRotatef(ay, 0, 1, 0)
-        
         self.DrawCylinder(radius, length)
         glPopMatrix()
     
+    #-----------------------------------------------------------------------------
     def DrawCylinder(self, radius, height):
         quad = gluNewQuadric()
         gluCylinder(quad, radius, radius, height, 20, 1)
         gluDeleteQuadric(quad)
     
+    #-----------------------------------------------------------------------------
     def DrawSphere(self, radius):
         quad = gluNewQuadric()
         gluSphere(quad, radius, 20, 20)
         gluDeleteQuadric(quad)
     
+    #-----------------------------------------------------------------------------
     def OnSize(self, event):
         self.Refresh()
     
@@ -447,10 +427,8 @@ class GLCanvas(glcanvas.GLCanvas):
             x, y = event.GetPosition()
             dx = x - self.last_x
             dy = y - self.last_y
-            
             self.rotation_y += dx
             self.rotation_x += dy
-            #print(str((self.rotation_y, self.rotation_x)))
             self.last_x = x
             self.last_y = y
             self.Refresh()
@@ -460,3 +438,11 @@ class GLCanvas(glcanvas.GLCanvas):
         self.distance -= delta / 120.0
         self.distance = max(3, min(20, self.distance))
         self.Refresh()
+
+    #-----------------------------------------------------------------------------
+    def updateCubeZ(self):
+        """ Update the cube Z position to simulate the gravity effect."""
+        if self.cube.z > self.cube.size/2: 
+            self.cube.z -= 0.1
+        elif self.cube.z < self.cube.size/2:
+            self.cube.z =self.cube.size/2
