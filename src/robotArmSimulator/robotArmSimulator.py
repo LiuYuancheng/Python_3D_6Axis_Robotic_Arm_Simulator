@@ -20,20 +20,19 @@ import numpy as np
 import wx
 import robotArmGlobal as gv
 import robotArmAgents as agents
-import robotArmCtrlMgr as ctrlMgr
+import robotArmDataMgr as dataMgr
 
-FRAME_SIZE = (1100, 800)
+FRAME_SIZE = (1100, 900)
 
 #-----------------------------------------------------------------------------
 #-----------------------------------------------------------------------------
-
 class RobotArmFrame(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None, title=gv.UI_TITLE, size=FRAME_SIZE)
         
         gv.iRobotArmObj = agents.RobotArm()
         gv.iCubeObj =agents.Cube(gv.gCubePosX, gv.gCubePosY, gv.gCubePosZ)  # Position cube near the arm
-        gv.iCtrlManager = ctrlMgr.robotArmCtrlMgr()
+        #gv.iCtrlManager = ctrlMgr.robotArmCtrlMgr()
         # Create main panel
         panel = wx.Panel(self)
         main_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -41,8 +40,31 @@ class RobotArmFrame(wx.Frame):
         # Create OpenGL canvas
         self.canvas = agents.GLCanvas(panel, gv.iRobotArmObj, gv.iCubeObj)
         
-        # Create control panel
-        control_panel = wx.Panel(panel)
+        control_panel = self._buildControlPanel(panel)
+        
+        # Add to main sizer
+        main_sizer.Add(self.canvas, 1, wx.EXPAND)
+        main_sizer.Add(control_panel, 0, wx.EXPAND|wx.ALL, 5)
+        
+        panel.SetSizer(main_sizer)
+        
+        self.updateLock = False 
+        self.lastPeriodicTime = time.time()
+        self.timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.periodic)
+        self.timer.Start(500)
+        
+        self.UpdatePosition()
+        self.Centre()
+        if gv.gTestMD:
+            gv.iDataManager = dataMgr.robotArmDataMgr()
+            gv.iDataManager.start()
+
+
+    def _buildControlPanel(self, mainPanel):
+        """ Build the main UI sizer."""
+       # Create control panel
+        control_panel = wx.Panel(mainPanel)
         control_sizer = wx.BoxSizer(wx.VERTICAL)
         
         # Title
@@ -53,6 +75,12 @@ class RobotArmFrame(wx.Frame):
         title.SetFont(font)
         control_sizer.Add(title, 0, wx.ALL, 10)
         
+        # Added the local test control check box 
+        self.checkBox = wx.CheckBox(control_panel, label="Enable the local control.")
+        self.checkBox.Bind(wx.EVT_CHECKBOX, self.OnCheckBox)
+        control_sizer.Add(self.checkBox, 0, wx.ALL, 10)
+        self.checkBox.SetValue(gv.gTestMD)
+
         # Joint 1 (Base)
         control_sizer.Add(wx.StaticText(control_panel, label="Base Rotation (θ1)"), 0, wx.LEFT|wx.TOP, 10)
         self.slider1 = wx.Slider(control_panel, value=0, minValue=-180, maxValue=180, style=wx.SL_HORIZONTAL|wx.SL_LABELS)
@@ -122,38 +150,109 @@ class RobotArmFrame(wx.Frame):
         control_sizer.Add(reset_btn, 0, wx.EXPAND|wx.ALL, 10)
         
         # Instructions
-        control_sizer.Add(wx.StaticLine(control_panel), 0, wx.EXPAND|wx.ALL, 10)
+        #control_sizer.Add(wx.StaticLine(control_panel), 0, wx.EXPAND|wx.ALL, 10)
         instructions = wx.StaticText(control_panel, label="Mouse Controls:\n• Left drag: Rotate view\n• Scroll: Zoom in/out\n\nGripper:\n• Close gripper near cube\n• Click 'Grab' to pick up\n• Move arm to relocate\n• Click 'Release' to drop")
         control_sizer.Add(instructions, 0, wx.ALL, 10)
         
         control_panel.SetSizer(control_sizer)
-        
-        # Add to main sizer
-        main_sizer.Add(self.canvas, 1, wx.EXPAND)
-        main_sizer.Add(control_panel, 0, wx.EXPAND|wx.ALL, 5)
-        
-        panel.SetSizer(main_sizer)
-        
-        self.updateLock = False 
-        self.lastPeriodicTime = time.time()
-        self.timer = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self.periodic)
-        self.timer.Start(500)
-        
-        self.UpdatePosition()
-        self.Centre()
-        gv.iCtrlManager.start()
+        return control_panel
 
-    
+    #-----------------------------------------------------------------------------
     def periodic(self, event):
         """ Call back every periodic time."""
         now = time.time()
-        if (not self.updateLock) and now - self.lastPeriodicTime >= 1:
-            print("periodic(): main frame update at %s" % str(now))
-            self.lastPeriodicTime = now
-            self.canvas.updateCubeZ()
-            self.canvas.Refresh()
-            # update the manager.
+        #if (not self.updateLock) and now - self.lastPeriodicTime >= 1:
+        print("periodic(): main frame update at %s" % str(now))
+        self.lastPeriodicTime = now
+        self.canvas.updateCubeZ()
+        # update the arm control movement.
+        if not gv.gTestMD: self.updateArmMovement()
+        self.canvas.Refresh()
+        # update the manager.
+
+    #-----------------------------------------------------------------------------
+    def updateArmMovement(self):
+        if gv.iDataManager is None: return 
+        reqList = gv.iDataManager.getArmAngleRequest()
+        crtList = gv.iRobotArmObj.getJointAngles()
+        if reqList == crtList: 
+            print("The arm is at the request position.")
+            return
+        # move the motor1
+        if gv.iRobotArmObj.theta1 < reqList[0]:
+            gv.iRobotArmObj.theta1 += gv.gMotorDegSpeed
+            if gv.iRobotArmObj.theta1 > reqList[0]:
+                gv.iRobotArmObj.theta1 = reqList[0]
+        elif gv.iRobotArmObj.theta1 > reqList[0]:
+            gv.iRobotArmObj.theta1 -= gv.gMotorDegSpeed
+            if gv.iRobotArmObj.theta1 < reqList[0]:
+                gv.iRobotArmObj.theta1 = reqList[0]
+        # move the motor2
+        if gv.iRobotArmObj.theta2 < reqList[1]:
+            gv.iRobotArmObj.theta2 += gv.gMotorDegSpeed
+            if gv.iRobotArmObj.theta2 > reqList[1]:
+                gv.iRobotArmObj.theta2 = reqList[1]
+        elif gv.iRobotArmObj.theta2 > reqList[1]:
+            gv.iRobotArmObj.theta2 -= gv.gMotorDegSpeed
+            if gv.iRobotArmObj.theta2 < reqList[1]:
+                gv.iRobotArmObj.theta2 = reqList[1]
+        # move the motor3
+        if gv.iRobotArmObj.theta3 < reqList[2]:
+            gv.iRobotArmObj.theta3 += gv.gMotorDegSpeed
+            if gv.iRobotArmObj.theta3 > reqList[2]:
+                gv.iRobotArmObj.theta3 = reqList[2]
+        elif gv.iRobotArmObj.theta3 > reqList[2]:
+            gv.iRobotArmObj.theta3 -= gv.gMotorDegSpeed
+            if gv.iRobotArmObj.theta3 < reqList[2]:
+                gv.iRobotArmObj.theta3 = reqList[2]
+        # move the motor4
+        if gv.iRobotArmObj.theta4 < reqList[3]:
+            gv.iRobotArmObj.theta4 += gv.gMotorDegSpeed
+            if gv.iRobotArmObj.theta4 > reqList[3]:
+                gv.iRobotArmObj.theta4 = reqList[3]
+        elif gv.iRobotArmObj.theta4 > reqList[3]:
+            gv.iRobotArmObj.theta4 -= gv.gMotorDegSpeed
+            if gv.iRobotArmObj.theta4 < reqList[3]:
+                gv.iRobotArmObj.theta4 = reqList[3]
+        # move the motor5
+        if gv.iRobotArmObj.theta5 < reqList[4]:
+            gv.iRobotArmObj.theta5 += gv.gMotorDegSpeed
+            if gv.iRobotArmObj.theta5 > reqList[4]:
+                gv.iRobotArmObj.theta5 = reqList[4]
+        elif gv.iRobotArmObj.theta5 > reqList[4]:
+            gv.iRobotArmObj.theta5 -= gv.gMotorDegSpeed
+            if gv.iRobotArmObj.theta5 < reqList[4]:
+                gv.iRobotArmObj.theta5 = reqList[4]
+        # move the gripper
+        if gv.iRobotArmObj.gripper_open < reqList[5]:
+            gv.iRobotArmObj.gripper_open += gv.gMotorDegSpeed
+            if gv.iRobotArmObj.gripper_open > reqList[5]:
+                gv.iRobotArmObj.gripper_open = reqList[5]
+        elif gv.iRobotArmObj.gripper_open > reqList[5]:
+            gv.iRobotArmObj.gripper_open -= gv.gMotorDegSpeed
+            if gv.iRobotArmObj.gripper_open < reqList[5]:
+                gv.iRobotArmObj.gripper_open = reqList[5]
+        
+        self.UpdatePosition()
+        self.slider1.SetValue(int(gv.iRobotArmObj.theta1))
+        self.slider2.SetValue(int(gv.iRobotArmObj.theta2))
+        self.slider3.SetValue(int(gv.iRobotArmObj.theta3))
+        self.slider4.SetValue(int(gv.iRobotArmObj.theta4))
+        self.slider5.SetValue(int(gv.iRobotArmObj.theta5))
+        self.gripper_slider.SetValue(int(gv.iRobotArmObj.gripper_open))
+
+    #-----------------------------------------------------------------------------
+    def OnCheckBox(self, event):
+        cbObj = event.GetEventObject()
+        gv.gTestMD = cbObj.IsChecked()
+        self.slider1.Enable(gv.gTestMD)
+        self.slider2.Enable(gv.gTestMD)
+        self.slider3.Enable(gv.gTestMD)
+        self.slider4.Enable(gv.gTestMD)
+        self.slider5.Enable(gv.gTestMD)
+        self.gripper_slider.Enable(gv.gTestMD)
+        self.grab_btn.Enable(gv.gTestMD)
+
 
     def OnSlider(self, event):
         gv.iRobotArmObj.theta1 = self.slider1.GetValue()
@@ -217,12 +316,13 @@ class RobotArmFrame(wx.Frame):
         self.cube_text.SetLabel(f"X: {cube_pos[0]:.2f}\nY: {cube_pos[1]:.2f}\nZ: {cube_pos[2]:.2f}")
     
     def OnReset(self, event):
-        self.slider1.SetValue(0)
-        self.slider2.SetValue(45)
-        self.slider3.SetValue(30)
-        self.slider4.SetValue(0)
-        self.slider5.SetValue(0)
-        self.gripper_slider.SetValue(50)
+        self.slider1.SetValue(gv.gMotoAngle1)
+        self.slider2.SetValue(gv.gMotoAngle2)
+        self.slider3.SetValue(gv.gMotoAngle3)
+        self.slider4.SetValue(gv.gMotoAngle4)
+        self.slider5.SetValue(gv.gMotoAngle5)
+
+        self.gripper_slider.SetValue(gv.gMotoAngle6)
         
         gv.iRobotArmObj.holding_cube = False
         gv.iCubeObj.reset()

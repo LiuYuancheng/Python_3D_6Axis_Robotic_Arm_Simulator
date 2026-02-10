@@ -112,6 +112,10 @@ class RobotArm(object):
         roll = self.theta5  # Roll angle for gripper rotation
         return yaw, pitch, roll
     
+    #-----------------------------------------------------------------------------
+    def getJointAngles(self):
+        return [self.theta1, self.theta2, self.theta3, self.theta4, self.theta5, self.gripper_open]
+
 #-----------------------------------------------------------------------------
 #-----------------------------------------------------------------------------
 class GLCanvas(glcanvas.GLCanvas):
@@ -444,6 +448,7 @@ class GLCanvas(glcanvas.GLCanvas):
     #-----------------------------------------------------------------------------
     def updateCubeZ(self):
         """ Update the cube Z position to simulate the gravity effect."""
+        if gv.iRobotArmObj.holding_cube: return
         if self.cube.z > self.cube.size/2: 
             self.cube.z -= 0.1
         elif self.cube.z < self.cube.size/2:

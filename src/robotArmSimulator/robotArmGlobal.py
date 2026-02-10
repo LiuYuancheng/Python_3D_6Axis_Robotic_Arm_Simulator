@@ -73,8 +73,8 @@ def gDebugPrint(msg, prt=True, logType=None):
     elif logType == LOG_INFO or DEBUG_FLG:
         Log.info(msg)
 
-OPCUA_PORT = int(CONFIG_DICT['OPCUA_PORT'])
-
+gTestMD = CONFIG_DICT['TEST_MD']      # test mode flag, True: the simulator will operate with control logic itself. 
+gUDPPort = int(CONFIG_DICT['UDP_PORT']) if 'UDP_PORT' in CONFIG_DICT.keys() else UDP_PORT
 
 gCanvasBgColor = (0.15, 0.15, 0.15, 1.0)
 # Arm Link lengths
@@ -100,4 +100,4 @@ gCubePosZ = 0.3
 #-------</GLOBAL VARIABLES (start with "g")>------------------------------------
 iRobotArmObj = None
 iCubeObj = None
-iCtrlManager = None
+iDataManager = None
