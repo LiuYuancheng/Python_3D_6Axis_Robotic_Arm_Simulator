@@ -2,13 +2,13 @@
 #-----------------------------------------------------------------------------
 # Name:        robotArmGlobal.py
 #
-# Purpose:     This module is a simple simulator for a 3D 6Axis robotic arm by 
-#              using the wxPython and OpenGL library.
+# Purpose:     This module is used as a local config file to set constants, 
+#              global parameters which will be used in the other modules.
 #
 # Author:      Yuancheng Liu
 #
 # Created:     2026/01/20
-# Version:     v_0.0.1
+# Version:     v_0.0.2
 # Copyright:   Copyright (c) 2026 LiuYuancheng
 # License:     MIT License
 #-----------------------------------------------------------------------------
@@ -29,7 +29,7 @@ APP_NAME = ('RobotArm', 'Simulator')
 
 TOP_DIR = 'src'
 LIB_DIR = 'lib'
-IMG_DIR = os.path.join(DIR_PATH, 'img')
+#IMG_DIR = os.path.join(DIR_PATH, 'img')
 
 idx = dirpath.rfind(TOP_DIR)
 gTopDir = dirpath[:idx + len(TOP_DIR)] if idx != -1 else dirpath   # found it - truncate right after TOPDIR
@@ -73,26 +73,23 @@ def gDebugPrint(msg, prt=True, logType=None):
     elif logType == LOG_INFO or DEBUG_FLG:
         Log.info(msg)
 
-gTestMD = CONFIG_DICT['TEST_MD']      # test mode flag, True: the simulator will operate with control logic itself. 
+gTestMD = CONFIG_DICT['TEST_MD']    # test mode flag, True: the simulator will operate with control logic itself. 
 gUDPPort = int(CONFIG_DICT['UDP_PORT']) if 'UDP_PORT' in CONFIG_DICT.keys() else UDP_PORT
-
-gCanvasBgColor = (0.15, 0.15, 0.15, 1.0)
+gCanvasBgColor = (0.15, 0.15, 0.15, 1.0)    # canvas background color
 # Arm Link lengths
 gArmBaseLen = 2.0
 gArmShoulderLen = 1.5
 gArmElbowLen = 1.0
 gArmWristLen = 0.5
-# 
+# Arm theta init angles
 gMotoAngle1 = 45.0
 gMotoAngle2 = -15.0
 gMotoAngle3 = 30.0
 gMotoAngle4 = 0.0
 gMotoAngle5 = 0.0
 gMotoAngle6 = 50.0
-
 gMotorDegSpeed = 5 # The moving speed of the motor.
-
-# Cube position in the canvas
+# Cube init position in the canvas
 gCubePosX = 2.0
 gCubePosY = 1.0
 gCubePosZ = 0.3

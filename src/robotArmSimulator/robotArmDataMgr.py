@@ -2,12 +2,12 @@
 #-----------------------------------------------------------------------------
 # Name:        robotArmCtrlMgr.py
 #
-# Purpose:     This module is the control manager which provides a sub-thread 
-#              to host the OPCUA server to receive the control command
+# Purpose:     This module is the data manager for receive the control command from 
+#              the remote controller such as PLC and send the sensor data. 
 #
 # Author:      Yuancheng Liu
 #
-# Created:     2026/02/04
+# Created:     2026/02/08
 # Version:     v_0.0.3
 # Copyright:   Copyright (c) 2026 LiuYuancheng
 # License:     MIT License
@@ -31,7 +31,6 @@ PLC_COMM_REP = 'REP'
 # PLC data exchange key
 PLC_CUBE_POS = 'cubePos'
 PLC_ARM_ANGLE = 'armAngle'
-
 
 # Define all the local utility functions here:
 #-----------------------------------------------------------------------------
@@ -61,7 +60,9 @@ class robotArmDataMgr(threading.Thread):
         # Init the request robot arm angles list 
         #self.armAngleReq= [gv.gMotoAngle1, gv.gMotoAngle2, gv.gMotoAngle3, gv.gMotoAngle4,
         #                   gv.gMotoAngle5, gv.gMotoAngle6]
-        self.armAngleReq= [30, -70, 90, 50, 10, 20]
+        self.armAngleReq= [25, -10,-50, 0, 0, 20]
+    
+    #-----------------------------------------------------------------------------
     def _fetchCubePos(self):
         posList = gv.iCubeObj.getPosition()
         respDict = {'pos': posList.copy()}

@@ -15,8 +15,6 @@
 
 import time
 import math
-import numpy as np
-
 import wx
 import robotArmGlobal as gv
 import robotArmAgents as agents
@@ -29,30 +27,24 @@ FRAME_SIZE = (1100, 900)
 class RobotArmFrame(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None, title=gv.UI_TITLE, size=FRAME_SIZE)
-        
         gv.iRobotArmObj = agents.RobotArm()
         gv.iCubeObj =agents.Cube(gv.gCubePosX, gv.gCubePosY, gv.gCubePosZ)  # Position cube near the arm
-        #gv.iCtrlManager = ctrlMgr.robotArmCtrlMgr()
         # Create main panel
         panel = wx.Panel(self)
         main_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        
         # Create OpenGL canvas
         self.canvas = agents.GLCanvas(panel, gv.iRobotArmObj, gv.iCubeObj)
-        
         control_panel = self._buildControlPanel(panel)
-        
         # Add to main sizer
         main_sizer.Add(self.canvas, 1, wx.EXPAND)
         main_sizer.Add(control_panel, 0, wx.EXPAND|wx.ALL, 5)
-        
         panel.SetSizer(main_sizer)
         
         self.updateLock = False 
         self.lastPeriodicTime = time.time()
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.periodic)
-        self.timer.Start(500)
+        self.timer.Start(300)
         
         self.UpdatePosition()
         self.Centre()
@@ -60,13 +52,12 @@ class RobotArmFrame(wx.Frame):
             gv.iDataManager = dataMgr.robotArmDataMgr()
             gv.iDataManager.start()
 
-
+    #-----------------------------------------------------------------------------
     def _buildControlPanel(self, mainPanel):
         """ Build the main UI sizer."""
        # Create control panel
         control_panel = wx.Panel(mainPanel)
         control_sizer = wx.BoxSizer(wx.VERTICAL)
-        
         # Title
         title = wx.StaticText(control_panel, label="Robot Arm Controls")
         font = title.GetFont()
@@ -74,49 +65,41 @@ class RobotArmFrame(wx.Frame):
         font = font.Bold()
         title.SetFont(font)
         control_sizer.Add(title, 0, wx.ALL, 10)
-        
         # Added the local test control check box 
         self.checkBox = wx.CheckBox(control_panel, label="Enable the local control.")
         self.checkBox.Bind(wx.EVT_CHECKBOX, self.OnCheckBox)
         control_sizer.Add(self.checkBox, 0, wx.ALL, 10)
         self.checkBox.SetValue(gv.gTestMD)
-
         # Joint 1 (Base)
         control_sizer.Add(wx.StaticText(control_panel, label="Base Rotation (θ1)"), 0, wx.LEFT|wx.TOP, 10)
-        self.slider1 = wx.Slider(control_panel, value=0, minValue=-180, maxValue=180, style=wx.SL_HORIZONTAL|wx.SL_LABELS)
+        self.slider1 = wx.Slider(control_panel, value=int(gv.gMotoAngle1), minValue=-180, maxValue=180, style=wx.SL_HORIZONTAL|wx.SL_LABELS)
         self.slider1.Bind(wx.EVT_SLIDER, self.OnSlider)
         control_sizer.Add(self.slider1, 0, wx.EXPAND|wx.ALL, 10)
-        
         # Joint 2 (Shoulder)
         control_sizer.Add(wx.StaticText(control_panel, label="Shoulder (θ2)"), 0, wx.LEFT, 10)
-        self.slider2 = wx.Slider(control_panel, value=45, minValue=-90, maxValue=90, style=wx.SL_HORIZONTAL|wx.SL_LABELS)
+        self.slider2 = wx.Slider(control_panel, value=int(gv.gMotoAngle2), minValue=-90, maxValue=90, style=wx.SL_HORIZONTAL|wx.SL_LABELS)
         self.slider2.Bind(wx.EVT_SLIDER, self.OnSlider)
         control_sizer.Add(self.slider2, 0, wx.EXPAND|wx.ALL, 10)
-        
         # Joint 3 (Elbow)
         control_sizer.Add(wx.StaticText(control_panel, label="Elbow (θ3)"), 0, wx.LEFT, 10)
-        self.slider3 = wx.Slider(control_panel, value=30, minValue=-180, maxValue=180, style=wx.SL_HORIZONTAL|wx.SL_LABELS)
+        self.slider3 = wx.Slider(control_panel, value=int(gv.gMotoAngle3), minValue=-180, maxValue=180, style=wx.SL_HORIZONTAL|wx.SL_LABELS)
         self.slider3.Bind(wx.EVT_SLIDER, self.OnSlider)
         control_sizer.Add(self.slider3, 0, wx.EXPAND|wx.ALL, 10)
-        
         # Joint 4 (Wrist)
         control_sizer.Add(wx.StaticText(control_panel, label="Wrist (θ4)"), 0, wx.LEFT, 10)
-        self.slider4 = wx.Slider(control_panel, value=0, minValue=-90, maxValue=90, style=wx.SL_HORIZONTAL|wx.SL_LABELS)
+        self.slider4 = wx.Slider(control_panel, value=int(gv.gMotoAngle4), minValue=-90, maxValue=90, style=wx.SL_HORIZONTAL|wx.SL_LABELS)
         self.slider4.Bind(wx.EVT_SLIDER, self.OnSlider)
         control_sizer.Add(self.slider4, 0, wx.EXPAND|wx.ALL, 10)
-        
         # Gripper Rotation (θ5)
         control_sizer.Add(wx.StaticText(control_panel, label="Gripper Rotation (θ5)"), 0, wx.LEFT, 10)
-        self.slider5 = wx.Slider(control_panel, value=0, minValue=-180, maxValue=180, style=wx.SL_HORIZONTAL|wx.SL_LABELS)
+        self.slider5 = wx.Slider(control_panel, value=int(gv.gMotoAngle5), minValue=-180, maxValue=180, style=wx.SL_HORIZONTAL|wx.SL_LABELS)
         self.slider5.Bind(wx.EVT_SLIDER, self.OnSlider)
         control_sizer.Add(self.slider5, 0, wx.EXPAND|wx.ALL, 10)
-        
         # Gripper control
         control_sizer.Add(wx.StaticText(control_panel, label="Gripper Opening"), 0, wx.LEFT, 10)
-        self.gripper_slider = wx.Slider(control_panel, value=50, minValue=0, maxValue=100, style=wx.SL_HORIZONTAL|wx.SL_LABELS)
+        self.gripper_slider = wx.Slider(control_panel, value=int(gv.gMotoAngle6), minValue=0, maxValue=100, style=wx.SL_HORIZONTAL|wx.SL_LABELS)
         self.gripper_slider.Bind(wx.EVT_SLIDER, self.OnGripperSlider)
         control_sizer.Add(self.gripper_slider, 0, wx.EXPAND|wx.ALL, 10)
-        
         # Gripper buttons
         btn_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.grab_btn = wx.Button(control_panel, label="Grab Cube")
@@ -253,7 +236,7 @@ class RobotArmFrame(wx.Frame):
         self.gripper_slider.Enable(gv.gTestMD)
         self.grab_btn.Enable(gv.gTestMD)
 
-
+    #-----------------------------------------------------------------------------
     def OnSlider(self, event):
         gv.iRobotArmObj.theta1 = self.slider1.GetValue()
         gv.iRobotArmObj.theta2 = self.slider2.GetValue()
@@ -265,15 +248,17 @@ class RobotArmFrame(wx.Frame):
         if gv.iRobotArmObj.holding_cube:
             positions = gv.iRobotArmObj.forwardKinematics()
             gripper_pos = positions[-1]
-            gv.iCubeObj.setPosition(gripper_pos[0], gripper_pos[1], gripper_pos[2])
+            gv.iCubeObj.setPosition(gripper_pos[0], gripper_pos[1], gripper_pos[2]-0.3)
         
         self.UpdatePosition()
         self.canvas.Refresh()
     
+    #-----------------------------------------------------------------------------
     def OnGripperSlider(self, event):
         gv.iRobotArmObj.gripper_open = self.gripper_slider.GetValue()
         self.canvas.Refresh()
     
+    #-----------------------------------------------------------------------------
     def OnGrabCube(self, event):
         positions = gv.iRobotArmObj.forwardKinematics()
         gripper_pos = positions[-1]
@@ -289,7 +274,7 @@ class RobotArmFrame(wx.Frame):
         # Check if gripper is close enough and closed enough
         if distance < 1 and gv.iRobotArmObj.gripper_open < 30:
             gv.iRobotArmObj.holding_cube = True
-            gv.iCubeObj.setPosition(gripper_pos[0], gripper_pos[1], gripper_pos[2])
+            gv.iCubeObj.setPosition(gripper_pos[0], gripper_pos[1], gripper_pos[2]-0.3)
             self.grab_btn.Enable(False)
             self.release_btn.Enable(True)
             self.status_text.SetLabel("Status: Holding cube")
@@ -300,6 +285,7 @@ class RobotArmFrame(wx.Frame):
             else:
                 self.status_text.SetLabel("Status: Close gripper more!")
     
+    #-----------------------------------------------------------------------------
     def OnReleaseCube(self, event):
         gv.iRobotArmObj.holding_cube = False
         self.grab_btn.Enable(True)
@@ -307,14 +293,16 @@ class RobotArmFrame(wx.Frame):
         self.status_text.SetLabel("Status: Cube released")
         self.canvas.Refresh()
     
+    #-----------------------------------------------------------------------------
     def UpdatePosition(self):
         positions = gv.iRobotArmObj.forwardKinematics()
         end_pos = positions[-1]
-        self.pos_text.SetLabel(f"X: {end_pos[0]:.2f}\nY: {end_pos[1]:.2f}\nZ: {end_pos[2]:.2f}")
+        self.pos_text.SetLabel("X: %.2f\nY: %.2f\nZ: %.2f" %(end_pos[0], end_pos[1], end_pos[2]))
         
         cube_pos = gv.iCubeObj.getPosition()
         self.cube_text.SetLabel(f"X: {cube_pos[0]:.2f}\nY: {cube_pos[1]:.2f}\nZ: {cube_pos[2]:.2f}")
     
+    #-----------------------------------------------------------------------------
     def OnReset(self, event):
         self.slider1.SetValue(gv.gMotoAngle1)
         self.slider2.SetValue(gv.gMotoAngle2)
