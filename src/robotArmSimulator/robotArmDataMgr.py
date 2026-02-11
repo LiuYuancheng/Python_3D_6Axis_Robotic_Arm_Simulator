@@ -85,7 +85,7 @@ class robotArmDataMgr(threading.Thread):
             reqDict = json.loads(reqJsonStr)
             gv.gDebugPrint("setArmAngleParm(): accept motor angles set state: %s" %reqJsonStr, 
                            logType=gv.LOG_INFO)
-            self.armAngleReq = list(reqDict).copy()
+            self.armAngleReq = list(reqDict['angles']).copy()
             respStr = json.dumps({'result': 'success'})
         except Exception as err:
             gv.gDebugPrint("setArmAngleParm() Error: %s" %str(err), logType=gv.LOG_EXCEPT)
@@ -99,7 +99,7 @@ class robotArmDataMgr(threading.Thread):
             reqDict = json.loads(reqJsonStr)
             gv.gDebugPrint("setGripperParm(): accept gripper close state : %s" %reqJsonStr, 
                            logType=gv.LOG_INFO)
-            if bool(reqDict): 
+            if bool(reqDict['gripper']): 
                 gv.iMainFrame.OnGrabCube(None)
             else:
                 gv.iMainFrame.OnReleaseCube(None)
