@@ -98,3 +98,4 @@ gCubePosZ = 0.3
 iRobotArmObj = None
 iCubeObj = None
 iDataManager = None
+iMainFrame = None

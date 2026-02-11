@@ -31,6 +31,7 @@ PLC_COMM_REP = 'REP'
 # PLC data exchange key
 PLC_CUBE_POS = 'cubePos'
 PLC_ARM_ANGLE = 'armAngle'
+PLC_GRIPPER_ON = 'gripperOn'
 
 # Define all the local utility functions here:
 #-----------------------------------------------------------------------------
@@ -82,14 +83,31 @@ class robotArmDataMgr(threading.Thread):
         respStr = json.dumps({'result': 'failed'})
         try:
             reqDict = json.loads(reqJsonStr)
-            gv.gDebugPrint("setWeatherParm(): accept weather state: %s" %reqJsonStr, 
+            gv.gDebugPrint("setArmAngleParm(): accept motor angles set state: %s" %reqJsonStr, 
                            logType=gv.LOG_INFO)
             self.armAngleReq = list(reqDict).copy()
             respStr = json.dumps({'result': 'success'})
         except Exception as err:
-            gv.gDebugPrint("setWeatherParm() Error: %s" %str(err), logType=gv.LOG_EXCEPT)
+            gv.gDebugPrint("setArmAngleParm() Error: %s" %str(err), logType=gv.LOG_EXCEPT)
         return respStr
     
+    #-----------------------------------------------------------------------------
+    def setGripperParm(self, reqJsonStr):
+        """ Accept and handle weather state clients' weather change request."""
+        respStr = json.dumps({'result': 'failed'})
+        try:
+            reqDict = json.loads(reqJsonStr)
+            gv.gDebugPrint("setGripperParm(): accept gripper close state : %s" %reqJsonStr, 
+                           logType=gv.LOG_INFO)
+            if bool(reqDict): 
+                gv.iMainFrame.OnGrabCube(None)
+            else:
+                gv.iMainFrame.OnReleaseCube(None)
+            respStr = json.dumps({'result': 'success'})
+        except Exception as err:
+            gv.gDebugPrint("setWeatherParm() Error: %s" %str(err), logType=gv.LOG_EXCEPT)
+        return respStr
+
    #-----------------------------------------------------------------------------
     def msgHandler(self, msg):
         """ Function to handle the data-fetch/control request from the monitor-hub.
@@ -117,6 +135,9 @@ class robotArmDataMgr(threading.Thread):
         elif reqKey== PLC_COMM_SET:
             if reqType == PLC_ARM_ANGLE:
                 respStr = self.setArmAngleParm(reqJsonStr)
+                resp =';'.join((PLC_COMM_REP, PLC_COMM_SET, respStr))
+            elif reqType == PLC_GRIPPER_ON:
+                respStr = self.setGripperParm(reqJsonStr)
                 resp =';'.join((PLC_COMM_REP, PLC_COMM_SET, respStr))
             # TODO: Handle all the control request here.
         if isinstance(resp, str): resp = resp.encode('utf-8')

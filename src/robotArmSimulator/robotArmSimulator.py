@@ -324,6 +324,6 @@ class RobotArmFrame(wx.Frame):
 #-----------------------------------------------------------------------------
 if __name__ == '__main__':
     app = wx.App(False)
-    frame = RobotArmFrame()
-    frame.Show()
+    gv.iMainFrame = RobotArmFrame()
+    gv.iMainFrame.Show()
     app.MainLoop()
