@@ -439,6 +439,7 @@ class GLCanvas(glcanvas.GLCanvas):
             self.last_y = y
             self.Refresh()
     
+    #-----------------------------------------------------------------------------
     def OnMouseWheel(self, event):
         delta = event.GetWheelRotation()
         self.distance -= delta / 120.0

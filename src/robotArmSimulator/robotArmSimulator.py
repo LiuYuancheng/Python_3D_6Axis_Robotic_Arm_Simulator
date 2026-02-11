@@ -145,7 +145,7 @@ class RobotArmFrame(wx.Frame):
         """ Call back every periodic time."""
         now = time.time()
         #if (not self.updateLock) and now - self.lastPeriodicTime >= 1:
-        print("periodic(): main frame update at %s" % str(now))
+        #print("periodic(): main frame update at %s" % str(now))
         self.lastPeriodicTime = now
         self.canvas.updateCubeZ()
         # update the arm control movement.
