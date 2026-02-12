@@ -85,27 +85,51 @@ class cubeSensorPanel(wx.Panel):
 class angleDisplayPanel(wx.Panel):
     """ Panel to display image. """
 
-    def __init__(self, parent, title, limitRange = (75, 220), panelSize=(300, 300)):
+    def __init__(self, parent, title, angleS=0, angleC=0, panelSize=(240, 240)):
         wx.Panel.__init__(self, parent, size=panelSize)
-        self.SetBackgroundColour(wx.Colour(200, 200, 200))
+        self.SetBackgroundColour(wx.Colour('BLACK'))
         self.panelSize = panelSize
         self.title = title
-        self.limitRange = limitRange
-        self.angle1 = None
-        self.angle2 = None
-        self.bmp = wx.Bitmap(gv.BGIMG_PATH, wx.BITMAP_TYPE_ANY)
+        self.angleS = int(angleS) # sensor angle
+        self.angleC = int(angleC) # control angle
         self.Bind(wx.EVT_PAINT, self.onPaint)
         self.SetDoubleBuffered(True)
 
-#--PanelImge--------------------------------------------------------------------
+    #-----------------------------------------------------------------------------
     def onPaint(self, evt):
         """ Draw the map on the panel."""
-        dc = wx.PaintDC(self)
-        dc.DrawBitmap(self.bmp, 0, 0)
-        
-        dc.SetFont(wx.Font(14, wx.DEFAULT, wx.NORMAL, wx.BOLD))
+        dc = wx.PaintDC(self)        
+        dc.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.BOLD))
         dc.SetTextForeground(wx.Colour('GREEN'))
         dc.DrawText(self.title, 5, 5)
+        dc.SetPen(wx.Pen(wx.Colour('GREEN'), 1, style=wx.PENSTYLE_LONG_DASH))
+        dc.SetBrush(wx.Brush(wx.Colour('BLACK'), wx.BRUSHSTYLE_TRANSPARENT))
+        dc.DrawLine(120, 0, 120, 240)
+        dc.DrawLine(0, 120, 240, 120)
+        dc.DrawCircle(120, 120, 100)
+        dc.SetFont(wx.Font(8, wx.DEFAULT, wx.NORMAL, wx.NORMAL))
+        dc.DrawText('0', 125, 225)
+        dc.DrawText('-90', 2, 125)
+        dc.DrawText('90', 225, 125)
+        dc.DrawText('180', 130, 5)
+        dc.DrawText('-180', 90, 5)
+        # Draw the control angle.
+        dc.SetFont(wx.Font(10, wx.DEFAULT, wx.NORMAL, wx.BOLD))
+        dc.SetPen(wx.Pen(wx.Colour('YELLOW'),2))
+        x2, y2 = 120+math.sin(math.radians(self.angleC))*100, 120+math.cos(math.radians(self.angleC))*100
+        dc.DrawLine(120, 120, x2, y2)
+        dc.SetTextForeground(wx.Colour('YELLOW'))
+        dc.DrawText(str(self.angleC)+"'", x2, y2)
+        # Draw the sensor angle.
+        dc.SetPen(wx.Pen(wx.Colour('GREEN'), 1, style=wx.PENSTYLE_LONG_DASH))
+        x1, y1 = 120+math.sin(math.radians(self.angleS))*100, 120+math.cos(math.radians(self.angleS))*100
+        dc.DrawLine(120, 120, x1, y1)
+        dc.SetTextForeground(wx.Colour('GREEN'))
+        dc.DrawText(str(self.angleS)+"'", x1, y1)
+        return
+    
+
+
         # draw the range detail.
         dc.SetPen(wx.Pen('Green'))
         dc.SetFont(wx.Font(10, wx.DEFAULT, wx.NORMAL, wx.NORMAL))
@@ -128,10 +152,11 @@ class angleDisplayPanel(wx.Panel):
             x5, y6 = 150-math.sin(math.radians(self.angle2))*130, 150+math.cos(math.radians(self.angle2))*130
             dc.DrawLine(150,150, x5, y6)
 
-    #-----------------------------------------------------------------------------
-    def updateAngle(self, angle1=None, angle2=None):
-        self.angle1 = angle1
-        self.angle2 = angle2
+    def setSensorAngle(self, angle):
+        self.angleS = int(angle)
+
+    def setControlAngle(self, angle):
+        self.angleC = int(angle)
 
     #-----------------------------------------------------------------------------
     def updateDisplay(self, updateFlag=None):
@@ -139,7 +164,7 @@ class angleDisplayPanel(wx.Panel):
             update the panel, if called as updateDisplay(updateFlag=?) the function
             will set the self update flag.
         """
-        self.Refresh(False)
+        self.Refresh(True)
         self.Update()
 
 #-----------------------------------------------------------------------------

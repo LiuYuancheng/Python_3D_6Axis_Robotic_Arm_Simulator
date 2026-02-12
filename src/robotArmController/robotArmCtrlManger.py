@@ -34,15 +34,15 @@ class plcDataManager(threading.Thread):
         self.parent = parent
         self.terminate = False
         self.dataVariableDict = {
-            ct.VN_CUBE_POS_X : 0.0,
-            ct.VN_CUBE_POS_Y : 0.0,
-            ct.VN_CUBE_POS_Z : 0.0,
-            ct.VN_ARM_ANGLE_1 : 0.0,
-            ct.VN_ARM_ANGLE_2 : 0.0,
-            ct.VN_ARM_ANGLE_3 : 0.0,
-            ct.VN_ARM_ANGLE_4 : 0.0,
-            ct.VN_ARM_ANGLE_5 : 0.0,
-            ct.VN_ARM_ANGLE_6 : 0.0
+            ct.VN_CUBE_POS_X : ct.IV_CUBE_POS_X,
+            ct.VN_CUBE_POS_Y : ct.IV_CUBE_POS_Y,
+            ct.VN_CUBE_POS_Z : ct.IV_CUBE_POS_Z,
+            ct.VN_ARM_ANGLE_1 : ct.IV_ARM_ANGLE_1,
+            ct.VN_ARM_ANGLE_2 : ct.IV_ARM_ANGLE_2,
+            ct.VN_ARM_ANGLE_3 : ct.IV_ARM_ANGLE_3,
+            ct.VN_ARM_ANGLE_4 : ct.IV_ARM_ANGLE_4,
+            ct.VN_ARM_ANGLE_5 : ct.IV_ARM_ANGLE_5,
+            ct.VN_ARM_ANGLE_6 : ct.IV_ARM_ANGLE_6
         }
         # Init the OPC-UA connector
         serverUrl = "opc.tcp://%s:%s/%s/server/" %(gv.gPlcDict['ip'], str(gv.gPlcDict['port']), gv.gPlcDict['id'])

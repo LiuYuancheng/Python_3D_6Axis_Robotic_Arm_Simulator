@@ -26,7 +26,7 @@ APP_NAME = 'Barccio Serial Controller'
 
 TOPDIR = 'src'
 LIBDIR = 'lib'
-CONFIG_FILE_NAME = 'BraccioConfig.txt'
+CONFIG_FILE_NAME = 'controllerConfig.txt'
 
 IMG_FD = 'img'
 ICO_PATH = os.path.join(dirpath, IMG_FD, "icon.png")

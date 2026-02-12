@@ -34,3 +34,14 @@ VN_ARM_ANGLE_3 = 'armAngle3'
 VN_ARM_ANGLE_4 = 'armAngle4'
 VN_ARM_ANGLE_5 = 'armAngle5'
 VN_ARM_ANGLE_6 = 'armAngle6'
+
+# Init value of the robot arm
+IV_CUBE_POS_X   = 2.0
+IV_CUBE_POS_Y   = 1.0
+IV_CUBE_POS_Z   = 0.3
+IV_ARM_ANGLE_1  = 45.0
+IV_ARM_ANGLE_2  = -15.0
+IV_ARM_ANGLE_3  = 30.0
+IV_ARM_ANGLE_4  = 0.0
+IV_ARM_ANGLE_5  = 0.0
+IV_ARM_ANGLE_6  = 50.0

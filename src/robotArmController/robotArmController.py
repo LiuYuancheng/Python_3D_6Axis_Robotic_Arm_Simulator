@@ -24,6 +24,7 @@ import robotArmCtrlConst as ct
 import robotArmCtrlPanel as pl
 import robotArmCtrlManger as mgr
 
+FRAME_SIZE = (1320, 735)
 PERIODIC = 300      # update in every 500ms
 
 #-----------------------------------------------------------------------------
@@ -32,7 +33,7 @@ class UIFrame(wx.Frame):
     """ Main UI frame window."""
     def __init__(self, parent, id, title):
         """ Init the UI and parameters """
-        wx.Frame.__init__(self, parent, id, title, size=(1600, 950))
+        wx.Frame.__init__(self, parent, id, title, size=FRAME_SIZE)
         self.SetBackgroundColour(wx.Colour(200, 210, 200))
         #self.SetTransparent(gv.gTranspPct*255//100)
         self.SetIcon(wx.Icon(gv.ICO_PATH))
@@ -107,6 +108,8 @@ class UIFrame(wx.Frame):
 
         vbox.Add(hbox1, flag=flagsL, border=2)
 
+        vbox.AddSpacer(5)
+
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
 
         elbowSizer = self._buildElbowSizer()
@@ -158,17 +161,10 @@ class UIFrame(wx.Frame):
 #--UIFrame---------------------------------------------------------------------
     def _buildGripSizer(self):
         sizer = wx.BoxSizer(wx.VERTICAL)
-        font = wx.Font(11, wx.DECORATIVE, wx.NORMAL, wx.BOLD)
-        label = wx.StaticText(self, label="Gripper Ctrl")
-        label.SetFont(font)
-        sizer.Add(label, flag=wx.LEFT, border=2)
-        sizer.AddSpacer(10)
-        self.gripDis = pl.angleDisplayPanel(self, "Gripper", limitRange=(70, 230))
+        self.gripDis = pl.angleDisplayPanel(self, "Gripper", angleS=ct.IV_ARM_ANGLE_6, angleC=ct.IV_ARM_ANGLE_6)
         sizer.Add(self.gripDis, flag=wx.LEFT, border=2)
         sizer.AddSpacer(5)
-        sizer.Add(wx.StaticText(self, label=" Motor Axis Angle Control :".ljust(15)), flag=wx.LEFT)
-        sizer.AddSpacer(5)
-        self.gripperCtrl = wx.Slider(self, value = int(159), minValue = 158, maxValue = 230, size=(270, 30),
+        self.gripperCtrl = wx.Slider(self, value = int(ct.IV_ARM_ANGLE_6), minValue = 0, maxValue = 100, size=(240, 30),
         style = wx.SL_HORIZONTAL|wx.SL_LABELS)
         self.gripperCtrl.Bind(wx.EVT_SCROLL_THUMBRELEASE, self.onGripperAdj)
         sizer.Add(self.gripperCtrl, flag=wx.CENTRE)
@@ -178,17 +174,10 @@ class UIFrame(wx.Frame):
     #--UIFrame---------------------------------------------------------------------
     def _buildWristRollSizer(self):
         sizer = wx.BoxSizer(wx.VERTICAL)
-        font = wx.Font(11, wx.DECORATIVE, wx.NORMAL, wx.BOLD)
-        label = wx.StaticText(self, label="WristRoll Ctrl")
-        label.SetFont(font)
-        sizer.Add(label, flag=wx.LEFT, border=2)
-        sizer.AddSpacer(10)
-        self.wristRollDis = pl.angleDisplayPanel(self, "WristRoll", limitRange=(5, 310))
+        self.wristRollDis = pl.angleDisplayPanel(self, "WristRoll", angleS=ct.IV_ARM_ANGLE_5, angleC=ct.IV_ARM_ANGLE_5)
         sizer.Add(self.wristRollDis, flag=wx.LEFT, border=2)
         sizer.AddSpacer(5)
-        sizer.Add(wx.StaticText(self, label=" Motor Axis Angle Control :".ljust(15)), flag=wx.LEFT)
-        sizer.AddSpacer(5)
-        self.wristRollDisCtrl = wx.Slider(self, value = int(158), minValue = 5, maxValue = 310, size=(270, 30),
+        self.wristRollDisCtrl = wx.Slider(self, value = int(ct.IV_ARM_ANGLE_5), minValue = -180, maxValue = 180, size=(240, 30),
         style = wx.SL_HORIZONTAL|wx.SL_LABELS)
         self.wristRollDisCtrl.Bind(wx.EVT_SCROLL_THUMBRELEASE, self.onWristRollAdj)
         sizer.Add(self.wristRollDisCtrl, flag=wx.CENTRE)
@@ -198,17 +187,10 @@ class UIFrame(wx.Frame):
     #--UIFrame---------------------------------------------------------------------
     def _buildWristPitchSizer(self):
         sizer = wx.BoxSizer(wx.VERTICAL)
-        font = wx.Font(11, wx.DECORATIVE, wx.NORMAL, wx.BOLD)
-        label = wx.StaticText(self, label="WristPitch Ctrl")
-        label.SetFont(font)
-        sizer.Add(label, flag=wx.LEFT, border=2)
-        sizer.AddSpacer(10)
-        self.wristPitchDis = pl.angleDisplayPanel(self, "wristPitch", limitRange=(85, 225))
+        self.wristPitchDis = pl.angleDisplayPanel(self, "wristPitch", angleS=ct.IV_ARM_ANGLE_4, angleC=ct.IV_ARM_ANGLE_4)
         sizer.Add(self.wristPitchDis, flag=wx.LEFT, border=2)
         sizer.AddSpacer(5)
-        sizer.Add(wx.StaticText(self, label=" Motor Axis Angle Control :".ljust(15)), flag=wx.LEFT)
-        sizer.AddSpacer(5)
-        self.wristPitchDisCtrl = wx.Slider(self, value = int(158), minValue = 85, maxValue = 225, size=(270, 30),
+        self.wristPitchDisCtrl = wx.Slider(self, value = int(ct.IV_ARM_ANGLE_4), minValue = -90, maxValue = 90, size=(240, 30),
         style = wx.SL_HORIZONTAL|wx.SL_LABELS)
         self.wristPitchDisCtrl.Bind(wx.EVT_SCROLL_THUMBRELEASE, self.onWristPitchAdj)
         sizer.Add(self.wristPitchDisCtrl, flag=wx.CENTRE)
@@ -218,20 +200,10 @@ class UIFrame(wx.Frame):
     #--UIFrame---------------------------------------------------------------------
     def _buildElbowSizer(self):
         sizer = wx.BoxSizer(wx.VERTICAL)
-        font = wx.Font(11, wx.DECORATIVE, wx.NORMAL, wx.BOLD)
-        label = wx.StaticText(self, label="Elbow Ctrl")
-        label.SetFont(font)
-        sizer.Add(label, flag=wx.LEFT, border=2)
-        sizer.AddSpacer(10)
-
-        self.elbowDis = pl.angleDisplayPanel(self, "Elbow", limitRange=(80, 220))
+        self.elbowDis = pl.angleDisplayPanel(self, "Elbow", angleS=ct.IV_ARM_ANGLE_3, angleC=ct.IV_ARM_ANGLE_3)
         sizer.Add(self.elbowDis, flag=wx.LEFT, border=2)
-        sizer.AddSpacer(5)
-        
-        sizer.Add(wx.StaticText(self, label=" Motor Axis Angle Control :".ljust(15)), flag=wx.LEFT)
-        sizer.AddSpacer(5)
-        
-        self.elbowDisCtrl = wx.Slider(self, value = int(158), minValue = 80, maxValue = 220, size=(270, 30),
+        sizer.AddSpacer(5)        
+        self.elbowDisCtrl = wx.Slider(self, value = int(ct.IV_ARM_ANGLE_3), minValue = -180, maxValue = 180, size=(240, 30),
         style = wx.SL_HORIZONTAL|wx.SL_LABELS)
         self.elbowDisCtrl.Bind(wx.EVT_SCROLL_THUMBRELEASE, self.onElbowAdj)
         sizer.Add(self.elbowDisCtrl, flag=wx.CENTRE)
@@ -239,24 +211,14 @@ class UIFrame(wx.Frame):
         sizer.AddSpacer(5)
         return sizer
 
-
     #--UIFrame---------------------------------------------------------------------
     def _buildShoulderSizer(self):
         sizer = wx.BoxSizer(wx.VERTICAL)
-        font = wx.Font(11, wx.DECORATIVE, wx.NORMAL, wx.BOLD)
-        label = wx.StaticText(self, label="Shoulder Ctrl")
-        label.SetFont(font)
-        sizer.Add(label, flag=wx.LEFT, border=2)
-        sizer.AddSpacer(10)
-
-        self.shoulderDis = pl.angleDisplayPanel(self, "Shoulder", limitRange=(70, 240))
+        self.shoulderDis = pl.angleDisplayPanel(self, "Shoulder", angleS=ct.IV_ARM_ANGLE_2, angleC=ct.IV_ARM_ANGLE_2)
         sizer.Add(self.shoulderDis, flag=wx.LEFT, border=2)
         sizer.AddSpacer(5)
         
-        sizer.Add(wx.StaticText(self, label=" Motor Axis Angle Control :".ljust(15)), flag=wx.LEFT)
-        sizer.AddSpacer(5)
-        
-        self.shoulderDisCtrl = wx.Slider(self, value = int(158), minValue = 70, maxValue = 240, size=(270, 30),
+        self.shoulderDisCtrl = wx.Slider(self, value = int(ct.IV_ARM_ANGLE_2), minValue = -90, maxValue = 90, size=(240, 30),
         style = wx.SL_HORIZONTAL|wx.SL_LABELS)
         self.shoulderDisCtrl.Bind(wx.EVT_SCROLL_THUMBRELEASE, self.onShoulderAdj)
         sizer.Add(self.shoulderDisCtrl, flag=wx.CENTRE)
@@ -267,24 +229,13 @@ class UIFrame(wx.Frame):
     #--UIFrame---------------------------------------------------------------------
     def _buildBaseSizer(self):
         sizer = wx.BoxSizer(wx.VERTICAL)
-        font = wx.Font(11, wx.DECORATIVE, wx.NORMAL, wx.BOLD)
-        label = wx.StaticText(self, label="Base Ctrl")
-        label.SetFont(font)
-        sizer.Add(label, flag=wx.LEFT, border=2)
-        sizer.AddSpacer(10)
-
-        self.baseDis = pl.angleDisplayPanel(self, "Base", limitRange=(70, 240))
+        self.baseDis = pl.angleDisplayPanel(self, "Base", angleS=ct.IV_ARM_ANGLE_1, angleC=ct.IV_ARM_ANGLE_1)
         sizer.Add(self.baseDis, flag=wx.LEFT, border=2)
         sizer.AddSpacer(5)
-        
-        sizer.Add(wx.StaticText(self, label=" Motor Axis Angle Control :".ljust(15)), flag=wx.LEFT)
-        sizer.AddSpacer(5)
-        
-        self.baseDisCtrl = wx.Slider(self, value = int(158), minValue = 70, maxValue = 240, size=(270, 30),
+        self.baseDisCtrl = wx.Slider(self, value = int(ct.IV_ARM_ANGLE_1), minValue = -180, maxValue = 180, size=(240, 30),
         style = wx.SL_HORIZONTAL|wx.SL_LABELS)
         self.baseDisCtrl.Bind(wx.EVT_SCROLL_THUMBRELEASE, self.onBaseAdj)
         sizer.Add(self.baseDisCtrl, flag=wx.CENTRE)
-        
         sizer.AddSpacer(5)
         return sizer
 
