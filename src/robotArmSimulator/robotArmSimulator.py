@@ -147,9 +147,10 @@ class RobotArmFrame(wx.Frame):
         #if (not self.updateLock) and now - self.lastPeriodicTime >= 1:
         #print("periodic(): main frame update at %s" % str(now))
         self.lastPeriodicTime = now
-        self.canvas.updateCubeZ()
         # update the arm control movement.
         if not gv.gTestMD: self.updateArmMovement()
+        # 
+        self.updateCubePos()
         self.canvas.Refresh()
         # update the manager.
 
@@ -243,16 +244,18 @@ class RobotArmFrame(wx.Frame):
         gv.iRobotArmObj.theta3 = self.slider3.GetValue()
         gv.iRobotArmObj.theta4 = self.slider4.GetValue()
         gv.iRobotArmObj.theta5 = self.slider5.GetValue()
-        
-        # Update cube position if holding
+        self.updateCubePos()
+        self.UpdatePosition()
+        self.canvas.Refresh()
+    
+    def updateCubePos(self):
+        """Update cube position if holding. """
         if gv.iRobotArmObj.holding_cube:
             positions = gv.iRobotArmObj.forwardKinematics()
             gripper_pos = positions[-1]
             gv.iCubeObj.setPosition(gripper_pos[0], gripper_pos[1], gripper_pos[2]-0.3)
-        
-        self.UpdatePosition()
-        self.canvas.Refresh()
-    
+        self.canvas.updateCubeZ()
+
     #-----------------------------------------------------------------------------
     def OnGripperSlider(self, event):
         gv.iRobotArmObj.gripper_open = self.gripper_slider.GetValue()

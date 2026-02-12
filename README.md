@@ -1,6 +1,10 @@
 # Python_3D_6Axis_Robotic_Arm_Simulator
 
-This module is a simple simulator for a robotic arm by using the wxPython and OpenGL library.
+**Program Design Purpose** : We want to create a PLC controlled robot arm simulation system with the OPCUA-TCP communication interface. The simulator system can be used as a cyber twin for robot arm control and OT security training.  This module is a simple simulator for a robotic arm by using the wxPython and OpenGL library.
+
+![](doc/img/s_00.gif)
+
+Main UI will be like this:
 
 ![](doc/img/s_01.png)
 
