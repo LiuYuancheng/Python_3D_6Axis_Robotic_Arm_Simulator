@@ -1,3 +1,17 @@
+#-----------------------------------------------------------------------------
+# Name:        robotArmCtrlConst.py
+#
+# Purpose:     The constant module for the airport ADS-B antenna ground station
+#              controller.   
+#              
+# Author:      Yuancheng Liu
+#
+# Created:     2026/02/11
+# Version:     v_0.0.1
+# Copyright:   Copyright (c) 2026 Liu Yuancheng
+# License:     GNU General Public License V3
+#-----------------------------------------------------------------------------
+
 OBJ_NAME = 'RobotArmCtrl'
 
 # All the OPCUA data and control parameters

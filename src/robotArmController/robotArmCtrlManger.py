@@ -19,7 +19,7 @@ import time
 import asyncio
 from queue import Queue
 import threading
-import BraccioCtrlGlobal as gv
+import robotArmCtrlGlobal as gv
 import robotArmCtrlConst as ct
 import opcuaComm
 
@@ -81,6 +81,9 @@ class plcDataManager(threading.Thread):
             print(str(self.dataVariableDict))
             time.sleep(0.4)            
         await self.armOPCUAclient.disconnect()
+
+    def getSensorDataDict(self):
+        return self.dataVariableDict
 
 #-----------------------------------------------------------------------------
 #-----------------------------------------------------------------------------

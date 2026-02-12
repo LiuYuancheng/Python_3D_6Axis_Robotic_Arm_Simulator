@@ -19,10 +19,12 @@ import time
 import json
 
 import wx
-import BraccioCtrlGlobal as gv
+import robotArmCtrlGlobal as gv
+import robotArmCtrlConst as ct
 import BraccioControllerPnl as pl
 import robotArmCtrlManger as mgr
-PERIODIC = 500      # update in every 500ms
+
+PERIODIC = 300      # update in every 500ms
 
 #-----------------------------------------------------------------------------
 #-----------------------------------------------------------------------------
@@ -30,7 +32,7 @@ class UIFrame(wx.Frame):
     """ Main UI frame window."""
     def __init__(self, parent, id, title):
         """ Init the UI and parameters """
-        wx.Frame.__init__(self, parent, id, title, size=(950, 950))
+        wx.Frame.__init__(self, parent, id, title, size=(1600, 950))
         self.SetBackgroundColour(wx.Colour(200, 210, 200))
         #self.SetTransparent(gv.gTranspPct*255//100)
         self.SetIcon(wx.Icon(gv.ICO_PATH))
@@ -87,9 +89,13 @@ class UIFrame(wx.Frame):
                         style=wx.LI_HORIZONTAL), flag=wx.LEFT, border=2)
         mSizer.AddSpacer(10)
 
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        gv.iGridPanel = pl.cubeSensorPanel(self)
+        hbox.Add(gv.iGridPanel, flag=flagsL, border=2)
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
 
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
-        
         gripSizer = self._buildGripSizer()
         hbox1.Add(gripSizer, flag=flagsL, border=2)
 
@@ -99,7 +105,7 @@ class UIFrame(wx.Frame):
         wrstPSizer = self._buildWristPitchSizer()
         hbox1.Add(wrstPSizer, flag=flagsL, border=2)
 
-        mSizer.Add(hbox1, flag=flagsL, border=2)
+        vbox.Add(hbox1, flag=flagsL, border=2)
 
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -112,7 +118,12 @@ class UIFrame(wx.Frame):
         baseSizer = self._buildBaseSizer()
         hbox2.Add(baseSizer, flag=flagsL, border=2)
 
-        mSizer.Add(hbox2, flag=flagsL, border=2)
+        vbox.Add(hbox2, flag=flagsL, border=2)
+
+
+        hbox.Add(vbox, flag=flagsL, border=2)
+        mSizer.Add(hbox, flag=flagsL, border=2)
+
 
         mSizer.AddSpacer(5)
         mSizer.Add(wx.StaticLine(self, wx.ID_ANY, size=(890, -1),
@@ -121,7 +132,7 @@ class UIFrame(wx.Frame):
 
         hbox3 = wx.BoxSizer(wx.HORIZONTAL)
         
-        self.retBt = wx.Button(self, label='Reset Poistion', size=(100, 22))
+        self.retBt = wx.Button(self, label='Reset Position', size=(100, 22))
         self.retBt.Bind(wx.EVT_BUTTON, self.onReset)
         hbox3.Add(self.retBt, flag=flagsL, border=2)
         hbox3.AddSpacer(10)
@@ -401,15 +412,18 @@ class UIFrame(wx.Frame):
         if (not self.updateLock) and now - self.lastPeriodicTime >= gv.gUpdateRate:
             #print("main frame update at %s" % str(now))
             self.lastPeriodicTime = now
-            if self.commMgr.hasQueuedTask():
-                self.commMgr.runQueuedTask()
-            else:
-                self.commMgr.fetchMotorPos()
+            self.updateSensorInfo()
             # update the display
-            angles = self.commMgr.getModtorPos()
-            if not angles is None:
-                self.updateDisplay(angles)
-            self.setConnection()
+            #angles = self.commMgr.getModtorPos()
+            #if not angles is None:
+            #    self.updateDisplay(angles)
+            #self.setConnection()
+            if gv.iGridPanel: gv.iGridPanel.updateDisplay()
+
+    def updateSensorInfo(self):
+        if gv.iDataMgr:
+            dataDict = gv.iDataMgr.getSensorDataDict()
+            gv.iGridPanel.updateCubePos(dataDict[ct.VN_CUBE_POS_X], dataDict[ct.VN_CUBE_POS_Y], dataDict[ct.VN_CUBE_POS_Z])
 
     def onClose(self, event):
         self.commMgr.stop()
