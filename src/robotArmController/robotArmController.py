@@ -21,7 +21,7 @@ import json
 import wx
 import robotArmCtrlGlobal as gv
 import robotArmCtrlConst as ct
-import BraccioControllerPnl as pl
+import robotArmCtrlPanel as pl
 import robotArmCtrlManger as mgr
 
 PERIODIC = 300      # update in every 500ms
