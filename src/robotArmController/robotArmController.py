@@ -21,7 +21,7 @@ import json
 import wx
 import BraccioCtrlGlobal as gv
 import BraccioControllerPnl as pl
-import robotArmController.robotArmCtrlManger as mgr
+import robotArmCtrlManger as mgr
 PERIODIC = 500      # update in every 500ms
 
 #-----------------------------------------------------------------------------
@@ -34,8 +34,9 @@ class UIFrame(wx.Frame):
         self.SetBackgroundColour(wx.Colour(200, 210, 200))
         #self.SetTransparent(gv.gTranspPct*255//100)
         self.SetIcon(wx.Icon(gv.ICO_PATH))
-        self.commMgr = mgr.CtrlManagerSerial(gv.gComPort, baudRate=gv.gbaudRate)
-        gv.iCtrlManger = self.commMgr
+
+        #self.commMgr = mgr.CtrlManagerSerial(gv.gComPort, baudRate=gv.gbaudRate)
+
         # Build UI sizer
         self.angles = [None]*6
         self.connected = False
@@ -54,12 +55,11 @@ class UIFrame(wx.Frame):
         self.updateLock = False
         self.Bind(wx.EVT_TIMER, self.periodic)
         self.timer.Start(PERIODIC)  # every 500 ms
-
         self.Bind(wx.EVT_CLOSE, self.onClose)
 
-        if gv.gHostAct:
-            gv.iconnHandler = mgr.connectionHandler(self)
-            gv.iconnHandler.start()
+        if not gv.gTestMD:
+            gv.iDataMgr = mgr.plcDataManager(self)
+            gv.iDataMgr.start()
 
 #--UIFrame---------------------------------------------------------------------
     def _buildUISizer(self):

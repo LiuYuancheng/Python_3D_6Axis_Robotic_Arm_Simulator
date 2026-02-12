@@ -20,7 +20,7 @@ import robotArmGlobal as gv
 import opcuaComm
 
 SERVER_NAME = 'Robot Arm Control Server'
-NAME_SPACE = 'newNameSpace01'
+NAME_SPACE = 'Motor_Controller'
 OBJ_NAME = 'newObject01'
 
 M_SENSOR1_ID = 'RobotArmSensor1'
