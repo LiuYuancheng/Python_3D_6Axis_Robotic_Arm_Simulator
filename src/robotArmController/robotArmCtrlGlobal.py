@@ -82,23 +82,20 @@ DEBUG = True
 #-------<GLOBAL VARIABLES (start with "g")>------------------------------------
 # VARIABLES are the built in data type.
 gTestMD = CONFIG_DICT['TEST_MD']
-gComPort = CONFIG_DICT['COM_PORT']
-gbaudRate = CONFIG_DICT['COM_RATE']
 
 gUpdateRate = 0.2     # main frame update rate 1 sec.
-gHostAct = CONFIG_DICT['UDP_HOST']
-gHostPort = int(CONFIG_DICT['UDP_PORT'])
 
-gUAnamespace = 'Controller'
+
 gPlcDict = {
     'id' : CONFIG_DICT['OPCUA_PLC_ID'],
     'ip' : CONFIG_DICT['OPCUA_PLC_IP'],
     'port' : int(CONFIG_DICT['OPCUA_PLC_PORT']),
 }
+gUAnamespace = 'Controller'
+
 
 #-------<GLOBAL PARAMTERS>-----------------------------------------------------
 iMainFrame = None   # MainFrame.
 iGridPanel = None   # MainFrame grid panel.
 iCtrlManger = None
-iconnHandler = None
 iDataMgr = None

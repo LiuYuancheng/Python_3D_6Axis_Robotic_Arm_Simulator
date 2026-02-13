@@ -1,0 +1,16 @@
+# This is the config file template for the module <robotArmController.py>
+# Setup the parameter with below format (every line follows <key>:<val> format, the
+# key can not be changed):
+
+#-----------------------------------------------------------------------------
+# Test mode:
+# True: Test the UI without connect to the robot arm controller.
+# False: connect to PLC via OPC-UA client, fetch and set the PLC real state.
+TEST_MD:False
+#TEST_MD:True
+
+#-----------------------------------------------------------------------------
+# RobotArm OPCUA-TCP controller(PLC) information
+OPCUA_PLC_ID:PLC-01
+OPCUA_PLC_IP:127.0.0.1
+OPCUA_PLC_PORT:4840

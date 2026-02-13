@@ -16,6 +16,10 @@ Main UI will be like this:
 # License:     MIT License
 ```
 
+Controller UI:
+
+![](doc/img/s_02.png)
+
 The Idea is from this video:
 
 https://youtu.be/zG4QcdsL4rM?si=WMlkdku4BwK09EiY

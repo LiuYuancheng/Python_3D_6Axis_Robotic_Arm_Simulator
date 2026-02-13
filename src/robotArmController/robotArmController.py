@@ -107,7 +107,7 @@ class UIFrame(wx.Frame):
         hbox.Add(vbox, flag=flagsL, border=2)
         mSizer.Add(hbox, flag=flagsL, border=2)
         mSizer.AddSpacer(5)
-        mSizer.Add(wx.StaticLine(self, wx.ID_ANY, size=(890, -1),
+        mSizer.Add(wx.StaticLine(self, wx.ID_ANY, size=(1310, -1),
                         style=wx.LI_HORIZONTAL), flag=wx.LEFT, border=2)
         mSizer.AddSpacer(10)
         # Row 2 
@@ -130,7 +130,7 @@ class UIFrame(wx.Frame):
         mSizer.Add(hbox3, flag=flagsL, border=2)
         return mSizer
 
-#--UIFrame---------------------------------------------------------------------
+    #--UIFrame---------------------------------------------------------------------
     def _buildGripSizer(self):
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.gripDis = pl.angleDisplayPanel(self, "Gripper", angleS=ct.IV_ARM_ANGLE_6, angleC=ct.IV_ARM_ANGLE_6)
@@ -175,7 +175,6 @@ class UIFrame(wx.Frame):
         self.elbowDisCtrl = wx.Slider(self, value = int(ct.IV_ARM_ANGLE_3), minValue = -180, maxValue = 180, size=(240, 30),
         style = wx.SL_HORIZONTAL|wx.SL_LABELS)
         sizer.Add(self.elbowDisCtrl, flag=wx.CENTRE)
-        
         sizer.AddSpacer(5)
         return sizer
 
@@ -185,11 +184,9 @@ class UIFrame(wx.Frame):
         self.shoulderDis = pl.angleDisplayPanel(self, "Shoulder", angleS=ct.IV_ARM_ANGLE_2, angleC=ct.IV_ARM_ANGLE_2)
         sizer.Add(self.shoulderDis, flag=wx.LEFT, border=2)
         sizer.AddSpacer(5)
-        
         self.shoulderDisCtrl = wx.Slider(self, value = int(ct.IV_ARM_ANGLE_2), minValue = -90, maxValue = 90, size=(240, 30),
         style = wx.SL_HORIZONTAL|wx.SL_LABELS)
         sizer.Add(self.shoulderDisCtrl, flag=wx.CENTRE)
-        
         sizer.AddSpacer(5)
         return sizer
 
@@ -205,8 +202,6 @@ class UIFrame(wx.Frame):
         sizer.AddSpacer(5)
         return sizer
 
-
-
     def onReset(self, event):
         self.commMgr.addRestTask()
 
@@ -220,40 +215,6 @@ class UIFrame(wx.Frame):
                     self.commMgr.addMotorMovTask(action['key'], action['val'])
         else:
             print("No action in scenario!")
-
-    def updateDisplay(self, angles):
-        if angles is None: return
-        if angles[0] != self.angles[0]:
-            self.angles[0] = angles[0]
-            angle1 = angles[0]
-            angle2 = None if angle1 is None else 157*2 - angle1
-            self.gripDis.updateAngle(angle1=angle1, angle2=angle2)
-            self.gripDis.updateDisplay()
-
-        if angles[1] != self.angles[1]:
-            self.angles[1] = angles[1]
-            self.wristRollDis.updateAngle(angle1=angles[1])
-            self.wristRollDis.updateDisplay()
-
-        if angles[2] != self.angles[2]:
-            self.angles[2] = angles[2]
-            self.wristPitchDis.updateAngle(angle1=angles[2])
-            self.wristPitchDis.updateDisplay()
-
-        if angles[3] != self.angles[3]:
-            self.angles[3] = angles[3]
-            self.elbowDis.updateAngle(angle1=angles[3])
-            self.elbowDis.updateDisplay()
-
-        if angles[4] != self.angles[4]:
-            self.angles[4] = angles[4]
-            self.shoulderDis.updateAngle(angle1=angles[4])
-            self.shoulderDis.updateDisplay()
-
-        if angles[5] != self.angles[5]:
-            self.angles[5] = angles[5]
-            self.baseDis.updateAngle(angle1=angles[5])
-            self.baseDis.updateDisplay()
 
     def setConnection(self):
         connFlg = self.commMgr.getConnection()
