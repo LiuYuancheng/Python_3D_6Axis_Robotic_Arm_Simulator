@@ -22,7 +22,7 @@ import os, sys
 print("Current working directory is : %s" % os.getcwd())
 dirpath = os.path.dirname(__file__)
 print("Current source code location : %s" % dirpath)
-APP_NAME = 'Barccio Serial Controller'
+APP_NAME = ('Controller', 'remoteController')
 
 TOPDIR = 'src'
 LIBDIR = 'lib'
@@ -41,7 +41,30 @@ gTopDir = dirpath[:idx + len(TOPDIR)] if idx != -1 else dirpath   # found it - t
 gLibDir = os.path.join(gTopDir, LIBDIR)
 if os.path.exists(gLibDir):
     sys.path.insert(0, gLibDir)
-        
+
+#-----------------------------------------------------------------------------
+# Init the logger:
+import Log
+Log.initLogger(gTopDir, 'Logs', APP_NAME[0], APP_NAME[1], historyCnt=100, fPutLogsUnderDate=True)
+
+# Init the log type parameters.
+DEBUG_FLG   = False
+LOG_INFO    = 0
+LOG_WARN    = 1
+LOG_ERR     = 2
+LOG_EXCEPT  = 3
+
+def gDebugPrint(msg, prt=True, logType=None):
+    if prt: print(msg)
+    if logType == LOG_WARN:
+        Log.warning(msg)
+    elif logType == LOG_ERR:
+        Log.error(msg)
+    elif logType == LOG_EXCEPT:
+        Log.exception(msg)
+    elif logType == LOG_INFO or DEBUG_FLG:
+        Log.info(msg)
+
 #-----------------------------------------------------------------------------
 # Init the configure file loader.
 import ConfigLoader

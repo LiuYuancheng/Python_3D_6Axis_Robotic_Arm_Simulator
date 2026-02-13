@@ -14,7 +14,6 @@
 #-----------------------------------------------------------------------------
 
 import os
-import sys
 import time
 import json
 
@@ -139,7 +138,6 @@ class UIFrame(wx.Frame):
         sizer.AddSpacer(5)
         self.gripperCtrl = wx.Slider(self, value = int(ct.IV_ARM_ANGLE_6), minValue = 0, maxValue = 100, size=(240, 30),
         style = wx.SL_HORIZONTAL|wx.SL_LABELS)
-        self.gripperCtrl.Bind(wx.EVT_SCROLL_THUMBRELEASE, self.onGripperAdj)
         sizer.Add(self.gripperCtrl, flag=wx.CENTRE)
         sizer.AddSpacer(5)
         return sizer
@@ -152,7 +150,6 @@ class UIFrame(wx.Frame):
         sizer.AddSpacer(5)
         self.wristRollDisCtrl = wx.Slider(self, value = int(ct.IV_ARM_ANGLE_5), minValue = -180, maxValue = 180, size=(240, 30),
         style = wx.SL_HORIZONTAL|wx.SL_LABELS)
-        self.wristRollDisCtrl.Bind(wx.EVT_SCROLL_THUMBRELEASE, self.onWristRollAdj)
         sizer.Add(self.wristRollDisCtrl, flag=wx.CENTRE)
         sizer.AddSpacer(5)
         return sizer
@@ -165,7 +162,6 @@ class UIFrame(wx.Frame):
         sizer.AddSpacer(5)
         self.wristPitchDisCtrl = wx.Slider(self, value = int(ct.IV_ARM_ANGLE_4), minValue = -90, maxValue = 90, size=(240, 30),
         style = wx.SL_HORIZONTAL|wx.SL_LABELS)
-        self.wristPitchDisCtrl.Bind(wx.EVT_SCROLL_THUMBRELEASE, self.onWristPitchAdj)
         sizer.Add(self.wristPitchDisCtrl, flag=wx.CENTRE)
         sizer.AddSpacer(5)
         return sizer
@@ -178,7 +174,6 @@ class UIFrame(wx.Frame):
         sizer.AddSpacer(5)        
         self.elbowDisCtrl = wx.Slider(self, value = int(ct.IV_ARM_ANGLE_3), minValue = -180, maxValue = 180, size=(240, 30),
         style = wx.SL_HORIZONTAL|wx.SL_LABELS)
-        self.elbowDisCtrl.Bind(wx.EVT_SCROLL_THUMBRELEASE, self.onElbowAdj)
         sizer.Add(self.elbowDisCtrl, flag=wx.CENTRE)
         
         sizer.AddSpacer(5)
@@ -193,7 +188,6 @@ class UIFrame(wx.Frame):
         
         self.shoulderDisCtrl = wx.Slider(self, value = int(ct.IV_ARM_ANGLE_2), minValue = -90, maxValue = 90, size=(240, 30),
         style = wx.SL_HORIZONTAL|wx.SL_LABELS)
-        self.shoulderDisCtrl.Bind(wx.EVT_SCROLL_THUMBRELEASE, self.onShoulderAdj)
         sizer.Add(self.shoulderDisCtrl, flag=wx.CENTRE)
         
         sizer.AddSpacer(5)
@@ -207,39 +201,11 @@ class UIFrame(wx.Frame):
         sizer.AddSpacer(5)
         self.baseDisCtrl = wx.Slider(self, value = int(ct.IV_ARM_ANGLE_1), minValue = -180, maxValue = 180, size=(240, 30),
         style = wx.SL_HORIZONTAL|wx.SL_LABELS)
-        self.baseDisCtrl.Bind(wx.EVT_SCROLL_THUMBRELEASE, self.onBaseAdj)
         sizer.Add(self.baseDisCtrl, flag=wx.CENTRE)
         sizer.AddSpacer(5)
         return sizer
 
-    def onGripperAdj(self, event):
-        val = self.gripperCtrl.GetValue()
-        self.commMgr.addMotorMovTask('grip', str(val))
-        #print(val)
 
-    def onWristRollAdj(self, event):
-        val = self.wristRollDisCtrl.GetValue()
-        self.commMgr.addMotorMovTask('wrtR', str(val))
-        #print(val)
-
-    def onWristPitchAdj(self, event):
-        val = self.wristPitchDisCtrl.GetValue()
-        self.commMgr.addMotorMovTask('wrtP', str(val))
-        #print(val)
-
-    def onElbowAdj(self, event):
-        val = self.elbowDisCtrl.GetValue()
-        self.commMgr.addMotorMovTask('elbw', str(val))
-        #print(val)
-
-    def onShoulderAdj(self, event):
-        val = self.shoulderDisCtrl.GetValue()
-        self.commMgr.addMotorMovTask('shld', str(val))
-        #print(val)
-
-    def onBaseAdj(self, event):
-        val = self.baseDisCtrl.GetValue()
-        self.commMgr.addMotorMovTask('base', str(val))
 
     def onReset(self, event):
         self.commMgr.addRestTask()
@@ -350,16 +316,26 @@ class UIFrame(wx.Frame):
             self.wristRollDis.updateDisplay()
             self.gripDis.updateDisplay()
 
+    def getAngleControlValues(self):
+        return [self.baseDisCtrl.GetValue(), self.shoulderDisCtrl.GetValue(), self.elbowDisCtrl.GetValue(),
+                self.wristPitchDisCtrl.GetValue(), self.wristRollDisCtrl.GetValue(), self.gripperCtrl.GetValue()]
+
     def updateSensorInfo(self):
         if gv.iDataMgr:
             dataDict = gv.iDataMgr.getSensorDataDict()
             gv.iGridPanel.updateCubePos(dataDict[ct.VN_CUBE_POS_X], dataDict[ct.VN_CUBE_POS_Y], dataDict[ct.VN_CUBE_POS_Z])
             self.baseDis.setSensorAngle(int(dataDict[ct.VN_ARM_ANGLE_1]))
+            self.baseDis.setControlAngle(int(self.baseDisCtrl.GetValue()))
             self.shoulderDis.setSensorAngle(int(dataDict[ct.VN_ARM_ANGLE_2]))
+            self.shoulderDis.setControlAngle(int(self.shoulderDisCtrl.GetValue()))
             self.elbowDis.setSensorAngle(int(dataDict[ct.VN_ARM_ANGLE_3]))
+            self.elbowDis.setControlAngle(int(self.elbowDisCtrl.GetValue()))
             self.wristPitchDis.setSensorAngle(int(dataDict[ct.VN_ARM_ANGLE_4]))
+            self.wristPitchDis.setControlAngle(int(self.wristPitchDisCtrl.GetValue()))
             self.wristRollDis.setSensorAngle(int(dataDict[ct.VN_ARM_ANGLE_5]))
+            self.wristRollDis.setControlAngle(int(self.wristRollDisCtrl.GetValue()))
             self.gripDis.setSensorAngle(int(dataDict[ct.VN_ARM_ANGLE_6]))
+            self.gripDis.setControlAngle(int(self.gripperCtrl.GetValue()))
 
     def onClose(self, event):
         self.Destroy()
@@ -368,7 +344,7 @@ class UIFrame(wx.Frame):
 #-----------------------------------------------------------------------------
 class MyApp(wx.App):
     def OnInit(self):
-        gv.iMainFrame = UIFrame(None, -1, gv.APP_NAME)
+        gv.iMainFrame = UIFrame(None, -1, gv.APP_NAME[0])
         gv.iMainFrame.Show(True)
         return True
 

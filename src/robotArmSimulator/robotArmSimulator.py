@@ -149,7 +149,6 @@ class RobotArmFrame(wx.Frame):
         self.lastPeriodicTime = now
         # update the arm control movement.
         if not gv.gTestMD: self.updateArmMovement()
-        # 
         self.updateCubePos()
         self.canvas.Refresh()
         # update the manager.
@@ -229,6 +228,7 @@ class RobotArmFrame(wx.Frame):
     def OnCheckBox(self, event):
         cbObj = event.GetEventObject()
         gv.gTestMD = cbObj.IsChecked()
+        gv.gDebugPrint("Robot Arm local control mode set to : %s " %str(gv.gTestMD), logType=gv.LOG_INFO)
         self.slider1.Enable(gv.gTestMD)
         self.slider2.Enable(gv.gTestMD)
         self.slider3.Enable(gv.gTestMD)

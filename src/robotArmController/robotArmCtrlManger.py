@@ -42,7 +42,15 @@ class plcDataManager(threading.Thread):
             ct.VN_ARM_ANGLE_3 : ct.IV_ARM_ANGLE_3,
             ct.VN_ARM_ANGLE_4 : ct.IV_ARM_ANGLE_4,
             ct.VN_ARM_ANGLE_5 : ct.IV_ARM_ANGLE_5,
-            ct.VN_ARM_ANGLE_6 : ct.IV_ARM_ANGLE_6
+            ct.VN_ARM_ANGLE_6 : ct.IV_ARM_ANGLE_6,
+            # add the control variable
+            ct.VN_GRIPPER_CTRL: False,
+            ct.VN_MOTOR1_CTRL : ct.IV_ARM_ANGLE_1,
+            ct.VN_MOTOR2_CTRL : ct.IV_ARM_ANGLE_2,
+            ct.VN_MOTOR3_CTRL : ct.IV_ARM_ANGLE_3,
+            ct.VN_MOTOR4_CTRL : ct.IV_ARM_ANGLE_4,
+            ct.VN_MOTOR5_CTRL : ct.IV_ARM_ANGLE_5,
+            ct.VN_MOTOR6_CTRL : ct.IV_ARM_ANGLE_6
         }
         # Init the OPC-UA connector
         serverUrl = "opc.tcp://%s:%s/%s/server/" %(gv.gPlcDict['ip'], str(gv.gPlcDict['port']), gv.gPlcDict['id'])
@@ -91,7 +99,34 @@ class plcDataManager(threading.Thread):
             self.dataVariableDict[ct.VN_ARM_ANGLE_5] = round(val, 1)
             val = await self.armOPCUAclient.getVariableVal(gv.gUAnamespace, ct.OBJ_NAME, ct.VN_ARM_ANGLE_6)
             self.dataVariableDict[ct.VN_ARM_ANGLE_6] = round(val, 1)
-            
+            val = await self.armOPCUAclient.getVariableVal(gv.gUAnamespace, ct.OBJ_NAME, ct.VN_MOTOR1_CTRL)
+            self.dataVariableDict[ct.VN_MOTOR1_CTRL] = round(val, 1)
+            val = await self.armOPCUAclient.getVariableVal(gv.gUAnamespace, ct.OBJ_NAME, ct.VN_MOTOR2_CTRL)
+            self.dataVariableDict[ct.VN_MOTOR2_CTRL] = round(val, 1)
+            val = await self.armOPCUAclient.getVariableVal(gv.gUAnamespace, ct.OBJ_NAME, ct.VN_MOTOR3_CTRL)
+            self.dataVariableDict[ct.VN_MOTOR3_CTRL] = round(val, 1)
+            val = await self.armOPCUAclient.getVariableVal(gv.gUAnamespace, ct.OBJ_NAME, ct.VN_MOTOR4_CTRL)
+            self.dataVariableDict[ct.VN_MOTOR4_CTRL] = round(val, 1)
+            val = await self.armOPCUAclient.getVariableVal(gv.gUAnamespace, ct.OBJ_NAME, ct.VN_MOTOR5_CTRL)
+            self.dataVariableDict[ct.VN_MOTOR5_CTRL] = round(val, 1)
+            val = await self.armOPCUAclient.getVariableVal(gv.gUAnamespace, ct.OBJ_NAME, ct.VN_MOTOR6_CTRL)
+            self.dataVariableDict[ct.VN_MOTOR6_CTRL] = round(val, 1)
+            val = await self.armOPCUAclient.getVariableVal(gv.gUAnamespace, ct.OBJ_NAME, ct.VN_GRIPPER_CTRL)
+            self.dataVariableDict[ct.VN_GRIPPER_CTRL] = round(val, 1)
+            # check whether need to update the control
+            ctrlList = gv.iMainFrame.getAngleControlValues()
+            if int(ctrlList[0]) != int(self.dataVariableDict[ct.VN_MOTOR1_CTRL]):
+                await self.armOPCUAclient.setVariableVal(gv.gUAnamespace, ct.OBJ_NAME, ct.VN_MOTOR1_CTRL, float(ctrlList[0]))
+            if int(ctrlList[1]) != int(self.dataVariableDict[ct.VN_MOTOR2_CTRL]):
+                await self.armOPCUAclient.setVariableVal(gv.gUAnamespace, ct.OBJ_NAME, ct.VN_MOTOR2_CTRL, float(ctrlList[1]))
+            if int(ctrlList[2]) != int(self.dataVariableDict[ct.VN_MOTOR3_CTRL]):
+                await self.armOPCUAclient.setVariableVal(gv.gUAnamespace, ct.OBJ_NAME, ct.VN_MOTOR3_CTRL, float(ctrlList[2]))
+            if int(ctrlList[3]) != int(self.dataVariableDict[ct.VN_MOTOR4_CTRL]):
+                await self.armOPCUAclient.setVariableVal(gv.gUAnamespace, ct.OBJ_NAME, ct.VN_MOTOR4_CTRL, float(ctrlList[3]))
+            if int(ctrlList[4]) != int(self.dataVariableDict[ct.VN_MOTOR5_CTRL]):
+                await self.armOPCUAclient.setVariableVal(gv.gUAnamespace, ct.OBJ_NAME, ct.VN_MOTOR5_CTRL, float(ctrlList[4]))
+            if int(ctrlList[5]) != int(self.dataVariableDict[ct.VN_MOTOR6_CTRL]):
+                await self.armOPCUAclient.setVariableVal(gv.gUAnamespace, ct.OBJ_NAME, ct.VN_MOTOR6_CTRL, float(ctrlList[5]))
             time.sleep(0.4)
 
         await self.armOPCUAclient.disconnect()

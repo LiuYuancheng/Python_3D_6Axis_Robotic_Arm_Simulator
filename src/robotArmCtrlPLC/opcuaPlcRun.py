@@ -179,7 +179,7 @@ class opcuaPlcSimulator(object):
             self.controlVariableDict[ct.VN_MOTOR6_CTRL]
         ]
         requestDict = { 'angles' : reqList}
-        gv.gDebugPrint("setSimulatorArmState: requestDict = %s")
+        gv.gDebugPrint("setSimulatorArmState: requestDict = %s", logType=gv.LOG_INFO)
         result =  self.pwConnector.setPWItemState(requestType=ct.PLC_ARM_ANGLE, 
                                                 stateDict=requestDict)
         return result
@@ -213,6 +213,7 @@ class opcuaPlcSimulator(object):
             await self.opcuaServerTh.getServer().updateVariable(ct.VN_ARM_ANGLE_6, float(self.dataVariableDict[ct.VN_ARM_ANGLE_6]))
             print(str(self.dataVariableDict))
             if self.initFlag:
+                gv.gDebugPrint("Do the 1st connection parameter synchronization init.")
                 self.initFlag = False
                 self.synchronizeData()
                 await self.opcuaServerTh.getServer().updateVariable(ct.VN_MOTOR1_CTRL, float(self.controlVariableDict[ct.VN_MOTOR1_CTRL]))
@@ -230,32 +231,32 @@ class opcuaPlcSimulator(object):
             r1 = await self.opcuaServerTh.getServer().getVariableVal(ct.VN_MOTOR1_CTRL)
             if int(r1) != int(self.controlVariableDict[ct.VN_MOTOR1_CTRL]):
                 self.controlVariableDict[ct.VN_MOTOR1_CTRL] = r1
-                self.sendCmdFlag = True
+                self.sendArmCtrlFlag = True
 
             r2 = await self.opcuaServerTh.getServer().getVariableVal(ct.VN_MOTOR2_CTRL)
             if int(r2) != int(self.controlVariableDict[ct.VN_MOTOR2_CTRL]):
                 self.controlVariableDict[ct.VN_MOTOR2_CTRL] = r2
-                self.sendCmdFlag = True
+                self.sendArmCtrlFlag = True
 
             r3 = await self.opcuaServerTh.getServer().getVariableVal(ct.VN_MOTOR3_CTRL)
             if int(r3) != int(self.controlVariableDict[ct.VN_MOTOR3_CTRL]):
                 self.controlVariableDict[ct.VN_MOTOR3_CTRL] = r3
-                self.sendCmdFlag = True
+                self.sendArmCtrlFlag = True
 
             r4 = await self.opcuaServerTh.getServer().getVariableVal(ct.VN_MOTOR4_CTRL)
             if int(r4) != int(self.controlVariableDict[ct.VN_MOTOR4_CTRL]):
                 self.controlVariableDict[ct.VN_MOTOR4_CTRL] = r4
-                self.sendCmdFlag = True
+                self.sendArmCtrlFlag = True
 
             r5 = await self.opcuaServerTh.getServer().getVariableVal(ct.VN_MOTOR5_CTRL)
             if int(r5) != int(self.controlVariableDict[ct.VN_MOTOR5_CTRL]):
                 self.controlVariableDict[ct.VN_MOTOR5_CTRL] = r5
-                self.sendCmdFlag = True
+                self.sendArmCtrlFlag = True
 
             r6 = await self.opcuaServerTh.getServer().getVariableVal(ct.VN_MOTOR6_CTRL)
             if int(r6) != int(self.controlVariableDict[ct.VN_MOTOR6_CTRL]):
                 self.controlVariableDict[ct.VN_MOTOR6_CTRL] = r6
-                self.sendCmdFlag = True
+                self.sendArmCtrlFlag = True
 
             if self.sendGripperCtrlFlag:
                 self.setSimulatorGripperState()
