@@ -37,9 +37,6 @@ class UIFrame(wx.Frame):
         self.SetBackgroundColour(wx.Colour(200, 210, 200))
         #self.SetTransparent(gv.gTranspPct*255//100)
         self.SetIcon(wx.Icon(gv.ICO_PATH))
-
-        #self.commMgr = mgr.CtrlManagerSerial(gv.gComPort, baudRate=gv.gbaudRate)
-
         # Build UI sizer
         self.angles = [None]*6
         self.connected = False
@@ -69,93 +66,69 @@ class UIFrame(wx.Frame):
         """ Build the main UI Sizer. """
         flagsL = wx.LEFT
         mSizer = wx.BoxSizer(wx.VERTICAL)
-        
         mSizer.AddSpacer(5)
-
+        # Row 0 
         hbox0 = wx.BoxSizer(wx.HORIZONTAL)
-        
         self.commChoice = wx.Choice(self, size = (120, 30), choices = ['OPCUA : TCP',])
         self.commChoice.SetSelection(0)
-
         hbox0.Add(self.commChoice, flag=flagsL | wx.CENTER, border=2)
         hbox0.AddSpacer(10)
         self.serialLedBt = wx.Button(self, label='Comm Connection : OFF', size=(150, 26))
         self.serialLedBt.SetBackgroundColour(wx.Colour('GRAY'))
         hbox0.Add(self.serialLedBt, flag=flagsL, border=2)
-
         mSizer.Add(hbox0, flag=flagsL, border=2)
-
         mSizer.AddSpacer(5)
-        mSizer.Add(wx.StaticLine(self, wx.ID_ANY, size=(890, -1),
+        mSizer.Add(wx.StaticLine(self, wx.ID_ANY, size=(1310, -1),
                         style=wx.LI_HORIZONTAL), flag=wx.LEFT, border=2)
         mSizer.AddSpacer(10)
-
+        # Row 1
         hbox = wx.BoxSizer(wx.HORIZONTAL)
+        # Cube sensor display 
         gv.iGridPanel = pl.cubeSensorPanel(self)
         hbox.Add(gv.iGridPanel, flag=flagsL, border=2)
-
+        # Robot arm angle display and control panel.
         vbox = wx.BoxSizer(wx.VERTICAL)
-
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
         gripSizer = self._buildGripSizer()
         hbox1.Add(gripSizer, flag=flagsL, border=2)
-
         wrstRSizer = self._buildWristRollSizer()
         hbox1.Add(wrstRSizer, flag=flagsL, border=2)
-
         wrstPSizer = self._buildWristPitchSizer()
         hbox1.Add(wrstPSizer, flag=flagsL, border=2)
-
         vbox.Add(hbox1, flag=flagsL, border=2)
-
         vbox.AddSpacer(5)
-
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
-
         elbowSizer = self._buildElbowSizer()
         hbox2.Add(elbowSizer, flag=flagsL, border=2)
-                
         shoulderSizer = self._buildShoulderSizer()
         hbox2.Add(shoulderSizer, flag=flagsL, border=2)
-        
         baseSizer = self._buildBaseSizer()
         hbox2.Add(baseSizer, flag=flagsL, border=2)
-
         vbox.Add(hbox2, flag=flagsL, border=2)
-
-
         hbox.Add(vbox, flag=flagsL, border=2)
         mSizer.Add(hbox, flag=flagsL, border=2)
-
-
         mSizer.AddSpacer(5)
         mSizer.Add(wx.StaticLine(self, wx.ID_ANY, size=(890, -1),
                         style=wx.LI_HORIZONTAL), flag=wx.LEFT, border=2)
         mSizer.AddSpacer(10)
-
+        # Row 2 
         hbox3 = wx.BoxSizer(wx.HORIZONTAL)
-        
         self.retBt = wx.Button(self, label='Reset Position', size=(100, 22))
         self.retBt.Bind(wx.EVT_BUTTON, self.onReset)
         hbox3.Add(self.retBt, flag=flagsL, border=2)
         hbox3.AddSpacer(10)
-        
         self.loadBt = wx.Button(self, label='Load Action Scenario', size=(140, 22))
         self.loadBt.Bind(wx.EVT_BUTTON, self.onLoadScenario)
         hbox3.Add(self.loadBt, flag=flagsL, border=2)
         hbox3.AddSpacer(10)
-
         self.executeBt = wx.Button(self, label='Execute Scenario', size=(100, 22))
         self.executeBt.Bind(wx.EVT_BUTTON, self.onExecute)
         hbox3.Add(self.executeBt, flag=flagsL, border=2)
         hbox3.AddSpacer(10)
-
         self.scenarioLB = wx.StaticText(self, label=" Current Scenario: %s" %str(self.scenarioName))
         hbox3.Add(self.scenarioLB, flag=flagsL, border=2)
         hbox3.AddSpacer(10)
-
         mSizer.Add(hbox3, flag=flagsL, border=2)
-
         return mSizer
 
 #--UIFrame---------------------------------------------------------------------
@@ -370,14 +343,25 @@ class UIFrame(wx.Frame):
             #    self.updateDisplay(angles)
             #self.setConnection()
             if gv.iGridPanel: gv.iGridPanel.updateDisplay()
+            self.baseDis.updateDisplay()
+            self.shoulderDis.updateDisplay()
+            self.elbowDis.updateDisplay()
+            self.wristPitchDis.updateDisplay()
+            self.wristRollDis.updateDisplay()
+            self.gripDis.updateDisplay()
 
     def updateSensorInfo(self):
         if gv.iDataMgr:
             dataDict = gv.iDataMgr.getSensorDataDict()
             gv.iGridPanel.updateCubePos(dataDict[ct.VN_CUBE_POS_X], dataDict[ct.VN_CUBE_POS_Y], dataDict[ct.VN_CUBE_POS_Z])
+            self.baseDis.setSensorAngle(int(dataDict[ct.VN_ARM_ANGLE_1]))
+            self.shoulderDis.setSensorAngle(int(dataDict[ct.VN_ARM_ANGLE_2]))
+            self.elbowDis.setSensorAngle(int(dataDict[ct.VN_ARM_ANGLE_3]))
+            self.wristPitchDis.setSensorAngle(int(dataDict[ct.VN_ARM_ANGLE_4]))
+            self.wristRollDis.setSensorAngle(int(dataDict[ct.VN_ARM_ANGLE_5]))
+            self.gripDis.setSensorAngle(int(dataDict[ct.VN_ARM_ANGLE_6]))
 
     def onClose(self, event):
-        self.commMgr.stop()
         self.Destroy()
 
 #-----------------------------------------------------------------------------

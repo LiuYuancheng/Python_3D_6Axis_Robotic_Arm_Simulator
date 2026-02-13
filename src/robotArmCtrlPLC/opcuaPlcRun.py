@@ -158,7 +158,7 @@ class opcuaPlcSimulator(object):
         self.dataVariableDict[ct.VN_ARM_ANGLE_6] = result['angles'][5]
         return result
     
-    def sychronizeData(self):
+    def synchronizeData(self):
         self.controlVariableDict[ct.VN_MOTOR1_CTRL] = self.dataVariableDict[ct.VN_ARM_ANGLE_1]
         self.controlVariableDict[ct.VN_MOTOR2_CTRL] = self.dataVariableDict[ct.VN_ARM_ANGLE_2]
         self.controlVariableDict[ct.VN_MOTOR3_CTRL] = self.dataVariableDict[ct.VN_ARM_ANGLE_3]
@@ -184,6 +184,7 @@ class opcuaPlcSimulator(object):
                                                 stateDict=requestDict)
         return result
 
+    #-----------------------------------------------------------------------------
     def setSimulatorGripperState(self):
         """ Send the message need to broadcast back to the physical world simulator. """
         requestDict = { 'gripper' : self.controlVariableDict[ct.VN_GRIPPER_CTRL]}
@@ -213,7 +214,7 @@ class opcuaPlcSimulator(object):
             print(str(self.dataVariableDict))
             if self.initFlag:
                 self.initFlag = False
-                self.sychronizeData()
+                self.synchronizeData()
                 await self.opcuaServerTh.getServer().updateVariable(ct.VN_MOTOR1_CTRL, float(self.controlVariableDict[ct.VN_MOTOR1_CTRL]))
                 await self.opcuaServerTh.getServer().updateVariable(ct.VN_MOTOR2_CTRL, float(self.controlVariableDict[ct.VN_MOTOR2_CTRL]))
                 await self.opcuaServerTh.getServer().updateVariable(ct.VN_MOTOR3_CTRL, float(self.controlVariableDict[ct.VN_MOTOR3_CTRL]))

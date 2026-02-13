@@ -78,8 +78,22 @@ class plcDataManager(threading.Thread):
             self.dataVariableDict[ct.VN_CUBE_POS_Y] = round(val, 1)
             val = await self.armOPCUAclient.getVariableVal(gv.gUAnamespace, ct.OBJ_NAME, ct.VN_CUBE_POS_Z)
             self.dataVariableDict[ct.VN_CUBE_POS_Z] = round(val, 1)
-            print(str(self.dataVariableDict))
-            time.sleep(0.4)            
+            #print(str(self.dataVariableDict))
+            val = await self.armOPCUAclient.getVariableVal(gv.gUAnamespace, ct.OBJ_NAME, ct.VN_ARM_ANGLE_1)
+            self.dataVariableDict[ct.VN_ARM_ANGLE_1] = round(val, 1)
+            val = await self.armOPCUAclient.getVariableVal(gv.gUAnamespace, ct.OBJ_NAME, ct.VN_ARM_ANGLE_2)
+            self.dataVariableDict[ct.VN_ARM_ANGLE_2] = round(val, 1)
+            val = await self.armOPCUAclient.getVariableVal(gv.gUAnamespace, ct.OBJ_NAME, ct.VN_ARM_ANGLE_3)
+            self.dataVariableDict[ct.VN_ARM_ANGLE_3] = round(val, 1)
+            val = await self.armOPCUAclient.getVariableVal(gv.gUAnamespace, ct.OBJ_NAME, ct.VN_ARM_ANGLE_4)
+            self.dataVariableDict[ct.VN_ARM_ANGLE_4] = round(val, 1)
+            val = await self.armOPCUAclient.getVariableVal(gv.gUAnamespace, ct.OBJ_NAME, ct.VN_ARM_ANGLE_5)
+            self.dataVariableDict[ct.VN_ARM_ANGLE_5] = round(val, 1)
+            val = await self.armOPCUAclient.getVariableVal(gv.gUAnamespace, ct.OBJ_NAME, ct.VN_ARM_ANGLE_6)
+            self.dataVariableDict[ct.VN_ARM_ANGLE_6] = round(val, 1)
+            
+            time.sleep(0.4)
+
         await self.armOPCUAclient.disconnect()
 
     def getSensorDataDict(self):

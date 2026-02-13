@@ -126,31 +126,6 @@ class angleDisplayPanel(wx.Panel):
         dc.DrawLine(120, 120, x1, y1)
         dc.SetTextForeground(wx.Colour('GREEN'))
         dc.DrawText(str(self.angleS)+"'", x1, y1)
-        return
-    
-
-
-        # draw the range detail.
-        dc.SetPen(wx.Pen('Green'))
-        dc.SetFont(wx.Font(10, wx.DEFAULT, wx.NORMAL, wx.NORMAL))
-        x1, y1 = 150-math.sin(math.radians(self.limitRange[0]))*130, 150+math.cos(math.radians(self.limitRange[0]))*130
-        dc.DrawLine(150,150, x1, y1)
-        dc.DrawText(str(self.limitRange[0]), x1+5, y1-5)
-
-        x2, y2 = 150-math.sin(math.radians(self.limitRange[1]))*130, 150+math.cos(math.radians(self.limitRange[1]))*130
-        dc.DrawLine(150,150, x2, y2)
-        dc.DrawText(str(self.limitRange[1]), x2+5, y2-5)
-        dc.SetTextForeground(wx.Colour('YELLOW'))
-        dc.SetPen(wx.Pen(wx.Colour('YELLOW'), width=3, style=wx.PENSTYLE_SHORT_DASH))
-        if not self.angle1 is None:
-            dc.DrawText("Output-1 Axis:%s" %str(self.angle1), 160, 180)
-            x3, y4 = 150-math.sin(math.radians(self.angle1))*130, 150+math.cos(math.radians(self.angle1))*130
-            dc.DrawLine(150,150, x3, y4)
-
-        if not self.angle2 is None:
-            dc.DrawText("Output-2 Axis:%s" %str(self.angle2), 160, 200)
-            x5, y6 = 150-math.sin(math.radians(self.angle2))*130, 150+math.cos(math.radians(self.angle2))*130
-            dc.DrawLine(150,150, x5, y6)
 
     def setSensorAngle(self, angle):
         self.angleS = int(angle)
