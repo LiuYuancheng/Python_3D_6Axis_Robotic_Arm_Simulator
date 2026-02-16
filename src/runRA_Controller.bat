@@ -7,11 +7,11 @@ if %errorlevel% neq 0 (
     echo "Failed to activate virtual environment, run with default python interpreter"
     REM Run the program with python/python3
     echo "> Run program under default interpreter"
-    python robotArmController.py
+    python robotArmController\robotArmController.py
     pause
     exit /b %errorlevel%
 )
 echo "> Run program under virtual environment"
 REM Run the Python script under virtual environment.
-call robotArmController.py
+call robotArmController\qrobotArmController.py
 pause
