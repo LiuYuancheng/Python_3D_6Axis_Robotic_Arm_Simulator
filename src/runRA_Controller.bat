@@ -13,5 +13,5 @@ if %errorlevel% neq 0 (
 )
 echo "> Run program under virtual environment"
 REM Run the Python script under virtual environment.
-call robotArmController\qrobotArmController.py
+call robotArmController\robotArmController.py
 pause

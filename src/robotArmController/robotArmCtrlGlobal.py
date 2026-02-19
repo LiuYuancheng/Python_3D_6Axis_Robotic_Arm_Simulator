@@ -6,9 +6,9 @@
 #              
 # Author:      Yuancheng Liu
 #
-# Created:     2020/01/10
-# Version:     v0.1.2
-# Copyright:   Copyright (c) 2023 LiuYuancheng
+# Created:     2026/02/10
+# Version:     v_0.0.2
+# Copyright:   Copyright (c) 2026 LiuYuancheng
 # License:     MIT License 
 #-----------------------------------------------------------------------------
 """
@@ -26,8 +26,6 @@ APP_NAME = ('Controller', 'remoteController')
 
 TOPDIR = 'src'
 LIBDIR = 'lib'
-CONFIG_FILE_NAME = 'controllerConfig.txt'
-
 IMG_FD = 'img'
 ICO_PATH = os.path.join(dirpath, IMG_FD, "icon.png")
 BGIMG_PATH = os.path.join(dirpath, IMG_FD, "background.png")
@@ -54,7 +52,7 @@ LOG_WARN    = 1
 LOG_ERR     = 2
 LOG_EXCEPT  = 3
 
-def gDebugPrint(msg, prt=True, logType=None):
+def gDebugPrint(msg, prt=True, logType=LOG_INFO):
     if prt: print(msg)
     if logType == LOG_WARN:
         Log.warning(msg)
@@ -68,6 +66,7 @@ def gDebugPrint(msg, prt=True, logType=None):
 #-----------------------------------------------------------------------------
 # Init the configure file loader.
 import ConfigLoader
+CONFIG_FILE_NAME = 'controllerConfig.txt'
 gGonfigPath = os.path.join(dirpath, CONFIG_FILE_NAME)
 iConfigLoader = ConfigLoader.ConfigLoader(gGonfigPath, mode='r')
 if iConfigLoader is None:
@@ -76,23 +75,18 @@ if iConfigLoader is None:
 CONFIG_DICT = iConfigLoader.getJson()
 
 #------<GLOBAL CONSTANTS>-------------------------------------------------------------
-STR_DECODE = 'utf-8'
 DEBUG = True
 
 #-------<GLOBAL VARIABLES (start with "g")>------------------------------------
 # VARIABLES are the built in data type.
 gTestMD = CONFIG_DICT['TEST_MD']
-
-gUpdateRate = 0.2     # main frame update rate 1 sec.
-
-
+gUpdateRate = 0.5     # main frame update rate 0.5 sec.
 gPlcDict = {
     'id' : CONFIG_DICT['OPCUA_PLC_ID'],
     'ip' : CONFIG_DICT['OPCUA_PLC_IP'],
     'port' : int(CONFIG_DICT['OPCUA_PLC_PORT']),
 }
 gUAnamespace = 'Controller'
-
 
 #-------<GLOBAL PARAMTERS>-----------------------------------------------------
 iMainFrame = None   # MainFrame.

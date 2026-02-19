@@ -7,7 +7,7 @@
 # Author:      Yuancheng Liu
 #
 # Created:     2026/02/11
-# Version:     v_0.0.1
+# Version:     v_0.0.2
 # Copyright:   Copyright (c) 2026 Liu Yuancheng
 # License:     GNU General Public License V3
 #-----------------------------------------------------------------------------
@@ -35,6 +35,7 @@ VN_ARM_ANGLE_4 = 'armAngle4'
 VN_ARM_ANGLE_5 = 'armAngle5'
 VN_ARM_ANGLE_6 = 'armAngle6'
 
+#-----------------------------------------------------------------------------
 # Init value of the robot arm
 IV_CUBE_POS_X   = 2.0
 IV_CUBE_POS_Y   = 1.0

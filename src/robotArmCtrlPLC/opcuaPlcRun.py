@@ -72,7 +72,7 @@ class opcuaService(threading.Thread):
         return self.server
 
     def run(self):
-        gv.gDebugPrint()("OPC-UA service thread run.", logType=gv.LOG_INFO)
+        gv.gDebugPrint("OPC-UA service thread run.", logType=gv.LOG_INFO)
         asyncio.run(self.server.runServer())
         gv.gDebugPrint("OPC-UA server thread run exit.", logType=gv.LOG_INFO)
 

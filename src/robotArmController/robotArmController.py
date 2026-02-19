@@ -37,7 +37,6 @@ class UIFrame(wx.Frame):
         #self.SetTransparent(gv.gTranspPct*255//100)
         self.SetIcon(wx.Icon(gv.ICO_PATH))
         # Build UI sizer
-        self.angles = [None]*6
         self.connected = False
         # load the action config files
         self.actCfgFiles = [filename for filename in os.listdir(gv.SCE_FD) if filename.endswith('.json')]
@@ -216,16 +215,13 @@ class UIFrame(wx.Frame):
         else:
             print("No action in scenario!")
 
-    def setConnection(self):
-        connFlg = self.commMgr.getConnection()
-        if self.connected != connFlg:
-            colourStr = 'GREEN' if connFlg else 'GRAY'
-            labelStr = 'Comm Connection : ON ' if connFlg else 'Comm Connection : OFF'
-            self.serialLedBt.SetBackgroundColour(wx.Colour(colourStr))
-            self.serialLedBt.SetLabel(labelStr)
-            self.connected = connFlg
-
-
+    def setConnection(self, connFlg):
+        self.connected = bool(connFlg)
+        colourStr = 'GREEN' if connFlg else 'GRAY'
+        labelStr = 'Comm Connection : ON ' if connFlg else 'Comm Connection : OFF'
+        self.serialLedBt.SetBackgroundColour(wx.Colour(colourStr))
+        self.serialLedBt.SetLabel(labelStr)
+    
 #-----------------------------------------------------------------------------
     def onLoadScenario(self, event):
         self.scenarioDialog = wx.SingleChoiceDialog(self,
@@ -268,7 +264,6 @@ class UIFrame(wx.Frame):
             #angles = self.commMgr.getModtorPos()
             #if not angles is None:
             #    self.updateDisplay(angles)
-            #self.setConnection()
             if gv.iGridPanel: gv.iGridPanel.updateDisplay()
             self.baseDis.updateDisplay()
             self.shoulderDis.updateDisplay()

@@ -1,22 +1,22 @@
 #!/usr/bin/python
 #-----------------------------------------------------------------------------
-# Name:        BraccioControllerPnl.py
+# Name:        robotArmCtrlPanel.py
 #
 # Purpose:     This module will provide the motor controller and potentiometer
 #              reading display panel for the controller.
 # 
 # Author:      Yuancheng Liu
 #
-# Version:     v_0.1
-# Created:     2023/09/21
-# Copyright:   Copyright (c) 2023 LiuYuancheng
+# Version:     v_0.0.2
+# Created:     2026/02/11
+# Copyright:   Copyright (c) 2026 LiuYuancheng
 # License:     MIT License  
 #-----------------------------------------------------------------------------
+
 import wx
 import math
-
-from datetime import datetime
 import robotArmCtrlGlobal as gv
+import robotArmCtrlConst as ct
 
 #-----------------------------------------------------------------------------
 #-----------------------------------------------------------------------------
@@ -27,15 +27,15 @@ class cubeSensorPanel(wx.Panel):
         wx.Panel.__init__(self, parent, size=panelSize)
         self.SetBackgroundColour(wx.Colour('BLACK'))
         self.panelSize = panelSize
-        self.cubeX = 2
-        self.cubeY = 1
-        self.cubeZ = 0.3
+        self.cubeX = ct.IV_CUBE_POS_X
+        self.cubeY = ct.IV_CUBE_POS_Y
+        self.cubeZ = ct.IV_CUBE_POS_Z
         self.Bind(wx.EVT_PAINT, self.onPaint)
         self.SetDoubleBuffered(True)
 
     #-----------------------------------------------------------------------------
     def onPaint(self, evt):
-        """ Draw the map on the panel."""
+        """ Draw the grid on the panel."""
         dc = wx.PaintDC(self)
         dc.SetPen(wx.Pen(wx.Colour(67, 138, 85), 1, style=wx.PENSTYLE_LONG_DASH))
         dc.SetBrush(wx.Brush(wx.Colour('BLACK'), wx.BRUSHSTYLE_TRANSPARENT))
@@ -83,7 +83,7 @@ class cubeSensorPanel(wx.Panel):
 #-----------------------------------------------------------------------------
 #-----------------------------------------------------------------------------
 class angleDisplayPanel(wx.Panel):
-    """ Panel to display image. """
+    """ Panel to display the sensor and control target angle of the servo motor. """
 
     def __init__(self, parent, title, angleS=0, angleC=0, panelSize=(240, 240)):
         wx.Panel.__init__(self, parent, size=panelSize)
@@ -141,29 +141,3 @@ class angleDisplayPanel(wx.Panel):
         """
         self.Refresh(True)
         self.Update()
-
-#-----------------------------------------------------------------------------
-#-----------------------------------------------------------------------------
-def main():
-    """ Main function used for local test debug panel. """
-
-    print('Test Case start: type in the panel you want to check:')
-    print('0 - PanelImge')
-    print('1 - PanelCtrl')
-    #pyin = str(input()).rstrip('\n')
-    #testPanelIdx = int(pyin)
-    testPanelIdx = 1    # change this parameter for you to test.
-    print("[%s]" %str(testPanelIdx))
-    app = wx.App()
-    mainFrame = wx.Frame(gv.iMainFrame, -1, 'Debug Panel',
-                         pos=(300, 300), size=(640, 480), style=wx.DEFAULT_FRAME_STYLE)
-
-    testPanel = angleDisplayPanel(mainFrame, title="grip")
-    mainFrame.Show()
-    app.MainLoop()
-
-if __name__ == "__main__":
-    main()
-
-
-
