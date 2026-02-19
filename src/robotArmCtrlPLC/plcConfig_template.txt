@@ -1,10 +1,10 @@
-# This is the config file template for the module <opcuaPlcADSB.py>
+# This is the config file template for the module <opcuaPlcRun.py>
 # Setup the parameter with below format (every line follow <key>:<value> format, the
 # key can not be changed):
 
 #-----------------------------------------------------------------------------
 # Set the master PLC's name 
-PLC_NAME:PLC-09
+PLC_NAME:PLC-01
 
 #-----------------------------------------------------------------------------
 # Define physical world simulator IP
@@ -14,14 +14,14 @@ RW_IP:127.0.0.1
 RW_PORT:3001
 
 # Define PLC clock interval
-CLK_INT:2
+CLK_INT:1
 
 # Physical world reconnection time 
 RW_RECONN_TIME:10
 
 #-----------------------------------------------------------------------------
-# Define IEC104 host IP, use 0.0.0.0 or localhost
+# Define OPCUA host IP, use 0.0.0.0 or localhost
 OPCUA_IP:0.0.0.0
 
-# Define IEC104 host Port, normally use 2404
+# Define OPCUA host Port, normally use 4840
 OPCUA_PORT:4840

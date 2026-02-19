@@ -6,9 +6,9 @@
 #              
 # Author:      Yuancheng Liu
 #
-# Created:     2025/12/03
-# Version:     v_0.0.1
-# Copyright:   Copyright (c) 2025 Liu Yuancheng
+# Created:     2026/02/13
+# Version:     v_0.0.2
+# Copyright:   Copyright (c) 2026 Liu Yuancheng
 # License:     GNU General Public License V3
 #-----------------------------------------------------------------------------
 """
@@ -58,17 +58,7 @@ if iConfigLoader is None:
 CONFIG_DICT = iConfigLoader.getJson()
 
 #-------<GLOBAL VARIABLES (start with "g")>------------------------------------
-# VARIABLES are the built in data type.
-gRealWorldIP = (CONFIG_DICT['RW_IP'], int(CONFIG_DICT['RW_PORT']))
-gInterval = float(CONFIG_DICT['CLK_INT'])
-gPlcName = CONFIG_DICT['PLC_NAME']
-gPlcHostIP = (CONFIG_DICT['OPCUA_IP'], int(CONFIG_DICT['OPCUA_PORT']))
-gReconnectTime = int(CONFIG_DICT['RW_RECONN_TIME'])
-
-gUAnamespace = 'Controller'
-
-gUpdateCoil = False
-def gDebugPrint(msg, prt=True, logType=None):
+def gDebugPrint(msg, prt=True, logType=LOG_INFO):
     if prt: print(msg)
     if logType == LOG_WARN:
         Log.warning(msg)
@@ -78,6 +68,14 @@ def gDebugPrint(msg, prt=True, logType=None):
         Log.exception(msg)
     elif logType == LOG_INFO or DEBUG_FLG:
         Log.info(msg)
+
+# VARIABLES are the built in data type.
+gRealWorldIP = (CONFIG_DICT['RW_IP'], int(CONFIG_DICT['RW_PORT']))
+gInterval = float(CONFIG_DICT['CLK_INT'])
+gPlcName = CONFIG_DICT['PLC_NAME']
+gPlcHostIP = (CONFIG_DICT['OPCUA_IP'], int(CONFIG_DICT['OPCUA_PORT']))
+gReconnectTime = int(CONFIG_DICT['RW_RECONN_TIME'])
+gUAnamespace = 'Controller'
 
 #-------<GLOBAL PARAMETERS>-----------------------------------------------------
 iLadderObj = None 

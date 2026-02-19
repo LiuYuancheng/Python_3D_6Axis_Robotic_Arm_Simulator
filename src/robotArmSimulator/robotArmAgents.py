@@ -309,7 +309,7 @@ class GLCanvas(glcanvas.GLCanvas):
         glTranslatef(*position)
         # Get gripper orientation
         yaw, pitch, roll = self.robot.getGripperOrientation()
-        print((yaw, pitch, roll))
+        #print((yaw, pitch, roll))
         glRotatef(yaw, 0, 0, 1)
         glRotatef(pitch, 0, 1, 0)
         glRotatef(roll, 0, 0, 1)  # Add roll rotation

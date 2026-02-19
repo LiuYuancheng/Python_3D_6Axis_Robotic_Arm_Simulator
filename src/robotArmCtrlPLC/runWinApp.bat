@@ -1,4 +1,4 @@
-echo "Running test case program [opcuaPlcADSB.py] under python vEnv3.8"
+echo "Running PLC program [opcuaPlcRun.py] under python vEnv3.8"
 @echo off
 REM Enable the virtual environment, replace the vEnv3.8 with the vEnv you configured.
 call workon vEnv3.8
