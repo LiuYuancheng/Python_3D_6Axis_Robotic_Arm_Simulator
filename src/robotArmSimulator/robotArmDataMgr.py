@@ -2,8 +2,9 @@
 #-----------------------------------------------------------------------------
 # Name:        robotArmCtrlMgr.py
 #
-# Purpose:     This module is the data manager for receive the control command from 
-#              the remote controller such as PLC and send the sensor data. 
+# Purpose:     This module is the data manager for receiving the control command 
+#              from the remote controller such as PLC and sending the sensor data
+#              via the UDP simulated electrical signal simulation channel.
 #
 # Author:      Yuancheng Liu
 #
@@ -18,7 +19,6 @@ import json
 import threading
 
 import robotArmGlobal as gv
-import Log
 import udpCom
 
 #-----------------------------------------------------------------------------
@@ -33,6 +33,11 @@ PLC_CUBE_POS = 'cubePos'
 PLC_ARM_ANGLE = 'armAngle'
 PLC_GRIPPER_ON = 'gripperOn'
 
+# Arm Parameter Key
+ARM_POS_TAG = 'pos'
+ARM_ANGLE_TAG = 'angles'
+ARM_GRIP_TAG = 'gripper'
+
 # Define all the local utility functions here:
 #-----------------------------------------------------------------------------
 def parseIncomeMsg(msg):
@@ -44,14 +49,15 @@ def parseIncomeMsg(msg):
         reqKey, reqType, reqJsonStr = req.split(';', 2)
         return (reqKey.strip(), reqType.strip(), reqJsonStr)
     except Exception as err:
-        Log.error('parseIncomeMsg(): The income message format is incorrect.')
-        Log.exception(err)
+        gv.gDebugPrint('parseIncomeMsg(): The income message format is incorrect.', 
+                       logType=gv.LOG_ERR)
+        gv.gDebugPrint(str(err), logType=gv.LOG_ERR)
         return('', '', json.dumps({}))
 
 #-----------------------------------------------------------------------------
 #-----------------------------------------------------------------------------
 class robotArmDataMgr(threading.Thread):
-
+    """ PLC data communication data management module with the UDP server. """
     def __init__(self):
         threading.Thread.__init__(self)
         self.terminate = False
@@ -62,16 +68,17 @@ class robotArmDataMgr(threading.Thread):
         #self.armAngleReq= [gv.gMotoAngle1, gv.gMotoAngle2, gv.gMotoAngle3, gv.gMotoAngle4,
         #                   gv.gMotoAngle5, gv.gMotoAngle6]
         self.armAngleReq= [25, -10,-50, 0, 0, 20]
+        self.terminate = False
     
     #-----------------------------------------------------------------------------
     def _fetchCubePos(self):
         posList = gv.iCubeObj.getPosition()
-        respDict = {'pos': posList.copy()}
+        respDict = {ARM_POS_TAG: posList.copy()}
         return json.dumps(respDict)
 
     def _fetchArmAngles(self):
         angles = gv.iRobotArmObj.getJointAngles()
-        respDict = {'angles': angles.copy()}
+        respDict = {ARM_ANGLE_TAG: angles.copy()}
         return json.dumps(respDict)
 
     def getArmAngleRequest(self):
@@ -79,13 +86,13 @@ class robotArmDataMgr(threading.Thread):
 
     #-----------------------------------------------------------------------------
     def setArmAngleParm(self, reqJsonStr):
-        """ Accept and handle weather state clients' weather change request."""
+        """ Accept and handle PLC motor angle control request. """
         respStr = json.dumps({'result': 'failed'})
         try:
             reqDict = json.loads(reqJsonStr)
             gv.gDebugPrint("setArmAngleParm(): accept motor angles set state: %s" %reqJsonStr, 
                            logType=gv.LOG_INFO)
-            self.armAngleReq = list(reqDict['angles']).copy()
+            self.armAngleReq = list(reqDict[ARM_ANGLE_TAG]).copy()
             respStr = json.dumps({'result': 'success'})
         except Exception as err:
             gv.gDebugPrint("setArmAngleParm() Error: %s" %str(err), logType=gv.LOG_EXCEPT)
@@ -93,13 +100,13 @@ class robotArmDataMgr(threading.Thread):
     
     #-----------------------------------------------------------------------------
     def setGripperParm(self, reqJsonStr):
-        """ Accept and handle weather state clients' weather change request."""
+        """ Accept and handle gripper close and release request."""
         respStr = json.dumps({'result': 'failed'})
         try:
             reqDict = json.loads(reqJsonStr)
             gv.gDebugPrint("setGripperParm(): accept gripper close state : %s" %reqJsonStr, 
                            logType=gv.LOG_INFO)
-            if bool(reqDict['gripper']): 
+            if bool(reqDict[ARM_GRIP_TAG]): 
                 gv.iMainFrame.OnGrabCube(None)
             else:
                 gv.iMainFrame.OnReleaseCube(None)
@@ -110,7 +117,7 @@ class robotArmDataMgr(threading.Thread):
 
    #-----------------------------------------------------------------------------
     def msgHandler(self, msg):
-        """ Function to handle the data-fetch/control request from the monitor-hub.
+        """ Function to handle the data-fetch/control request from the PLC modules.
             Args:
                 msg (str/bytes): incoming data from PLC modules though UDP.
             Returns:
@@ -147,7 +154,7 @@ class robotArmDataMgr(threading.Thread):
     #-----------------------------------------------------------------------------
     def run(self):
         """ Thread run() function will be called by start(). """
-        time.sleep(1)
+        time.sleep(1) # sleep for 1 sec to wait all other modules to start.
         gv.gDebugPrint("DataManager sub-thread started.", logType=gv.LOG_INFO)
         self.server.serverStart(handler=self.msgHandler)
         gv.gDebugPrint("DataManager running finished.", logType=gv.LOG_INFO)
@@ -157,6 +164,6 @@ class robotArmDataMgr(threading.Thread):
         """ Stop the thread."""
         self.terminate = True
         if self.server: self.server.serverStop()
-        endClient = udpCom.udpClient(('127.0.0.1', gv.UDP_PORT))
+        endClient = udpCom.udpClient(('127.0.0.1', gv.gUDPPort))
         endClient.disconnect()
         endClient = None

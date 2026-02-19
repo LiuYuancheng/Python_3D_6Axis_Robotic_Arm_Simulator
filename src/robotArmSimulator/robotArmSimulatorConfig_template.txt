@@ -7,10 +7,10 @@ UI_TITLE:3D Robot Arm Simulation with Gripper
 
 #-----------------------------------------------------------------------------
 # Test mode:
-# True: use the real word internal logic to simulator the control logic. 
-# False: connect to PLC let plc control the signals 
+# True: Enable the local control test mode. 
+# False: connect to PLC let plc control the robot arm. 
 # TEST_MD:True
-TEST_MD:False
+TEST_MD:True
 
 #-----------------------------------------------------------------------------
 # Init the dataManager port for PLC to fetch and set data. 

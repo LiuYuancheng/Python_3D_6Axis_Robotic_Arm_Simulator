@@ -8,11 +8,10 @@
 # Author:      Yuancheng Liu
 #
 # Created:     2026/01/20
-# Version:     v_0.0.2
+# Version:     v_0.0.3
 # Copyright:   Copyright (c) 2026 LiuYuancheng
 # License:     MIT License
 #-----------------------------------------------------------------------------
-
 """
 For good coding practice, follow the following naming convention:
     1) Global variables should be defined with initial character 'g'
@@ -50,9 +49,8 @@ if iConfigLoader is None:
     print("Error: The config file %s is not exist.Program exit!" %str(gConfigPath))
     exit()
 CONFIG_DICT = iConfigLoader.getJson()
-
 UI_TITLE = CONFIG_DICT['UI_TITLE']
-
+UDP_PORT = 3001 # default UPD channel port.
 # Init the log type parameters.
 DEBUG_FLG   = False
 LOG_INFO    = 0
@@ -73,9 +71,9 @@ def gDebugPrint(msg, prt=True, logType=None):
     elif logType == LOG_INFO or DEBUG_FLG:
         Log.info(msg)
 
-gTestMD = CONFIG_DICT['TEST_MD']    # test mode flag, True: the simulator will operate with control logic itself. 
+gTestMD = CONFIG_DICT['TEST_MD']
 gUDPPort = int(CONFIG_DICT['UDP_PORT']) if 'UDP_PORT' in CONFIG_DICT.keys() else UDP_PORT
-gCanvasBgColor = (0.15, 0.15, 0.15, 1.0)    # canvas background color
+gCanvasBgColor = (0.15, 0.15, 0.15, 1.0)    # Default canvas background color
 # Arm Link lengths
 gArmBaseLen = 2.0
 gArmShoulderLen = 1.5

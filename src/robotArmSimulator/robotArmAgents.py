@@ -3,12 +3,13 @@
 # Name:        robotArmAgents.py
 #
 # Purpose:     This module incudes all the agent classes to define the visible 
-#              object (Cube, RobotArm, Env) shown in the robot arm simulator.
+#              object (Cube, RobotArm, Env) shown in the robot arm simulator main 
+#              canvas window.
 #
 # Author:      Yuancheng Liu
 #
 # Created:     2026/01/19
-# Version:     v_0.0.1
+# Version:     v_0.0.3
 # Copyright:   Copyright (c) 2026 LiuYuancheng
 # License:     MIT License
 #-----------------------------------------------------------------------------
@@ -19,7 +20,6 @@ import wx.glcanvas as glcanvas
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
-
 import robotArmGlobal as gv
 
 #-----------------------------------------------------------------------------
@@ -27,12 +27,12 @@ import robotArmGlobal as gv
 class Cube(object):
     """ The small cube object for the robot arm to grab."""
     def __init__(self, x, y, z, size=0.3):
-        """  self.cube =agents.Cube(2.0, 1.0, 0.3) 
-        Args:
-            x (float): Cube init position x coordinate.
-            y (float): Cube init position y coordinate.
-            z (float): Cube init position z coordinate.
-            size (float, optional): size. Defaults to 0.3.
+        """ Init example: self.cube =agents.Cube(2.0, 1.0, 0.3) 
+            Args:
+                x (float): Cube init position x coordinate.
+                y (float): Cube init position y coordinate.
+                z (float): Cube init position z coordinate.
+                size (float, optional): size. Defaults to 0.3.
         """
         self.x = x
         self.y = y
@@ -40,6 +40,7 @@ class Cube(object):
         self.size = size
         self.original_pos = [x, y, z]
     
+    #-----------------------------------------------------------------------------
     def reset(self):
         self.x, self.y, self.z = self.original_pos
     
@@ -75,7 +76,7 @@ class RobotArm(object):
     
     #-----------------------------------------------------------------------------
     def forwardKinematics(self):
-        """Calculate the position of each joint"""
+        """ Calculate the position of each joint. return the list with 5 joint positions."""
         t1 = math.radians(self.theta1)  # Negate for correct rotation direction
         t2 = math.radians(self.theta2)
         t3 = math.radians(self.theta3)
@@ -105,7 +106,7 @@ class RobotArm(object):
     
     #-----------------------------------------------------------------------------
     def getGripperOrientation(self):
-        """Get the orientation angles for the gripper"""
+        """ Get the orientation angles for the gripper """
         # Gripper always points down, so we set pitch to -90 degrees
         pitch = 180  # make the gripper always point down
         yaw = self.theta1  # Yaw angle (base rotation)
@@ -115,6 +116,9 @@ class RobotArm(object):
     #-----------------------------------------------------------------------------
     def getJointAngles(self):
         return [self.theta1, self.theta2, self.theta3, self.theta4, self.theta5, self.gripper_open]
+
+    def getCubeHoldingState(self):
+        return self.holding_cube
 
 #-----------------------------------------------------------------------------
 #-----------------------------------------------------------------------------
@@ -144,7 +148,7 @@ class GLCanvas(glcanvas.GLCanvas):
         """ Init the openGL scene."""
         self.SetCurrent(self.context)
         #glClearColor(0.95, 0.95, 0.95, 1.0)
-        glClearColor(gv.gCanvasBgColor[0], gv.gCanvasBgColor[1], gv.gCanvasBgColor[2], gv.gCanvasBgColor[3])
+        glClearColor(gv.gCanvasBgColor[0], gv.gCanvasBgColor[1],gv.gCanvasBgColor[2], gv.gCanvasBgColor[3])
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_LIGHTING)
         glEnable(GL_LIGHT0)
@@ -175,9 +179,8 @@ class GLCanvas(glcanvas.GLCanvas):
     
     #-----------------------------------------------------------------------------
     def DrawScene(self):
-        # Draw grid
+        """ Draw the scene with all the objects. """
         self.DrawGrid()
-        # Draw cube
         self.DrawCube()
         # Draw robot arm
         positions = self.robot.forwardKinematics()
@@ -187,7 +190,7 @@ class GLCanvas(glcanvas.GLCanvas):
         glTranslatef(0, 0, 0)
         # Draw the area the robot can reach
         #self.DrawCylinder(1, 0.05)
-        self.DrawCylinder(2.4, 0.05)
+        self.DrawCylinder(2.4, 0.05) # 2.4 the max radius range the robot can reach
         glPopMatrix()
         # Draw arm segments
         colors = [(1, 0, 0), (0, 1, 0), (0, 0, 1), (1, 1, 0)]
@@ -230,25 +233,6 @@ class GLCanvas(glcanvas.GLCanvas):
                     glVertex3f(x, y, 0.02)
         glEnd()
         glPointSize(1)
-        
-        # Draw small coordinate markers with lines
-        # for x in range(-5, 6, 2):
-        #     for y in range(-5, 6, 2):
-        #         # Draw a small cross at each major grid intersection
-        #         glBegin(GL_LINES)
-        #         if x == 0 and y == 0:
-        #             glColor3f(0.0, 0.0, 0.0)
-        #         else:
-        #             glColor3f(0.4, 0.4, 0.4)
-                
-        #         # Horizontal line of cross
-        #         glVertex3f(x - 0.1, y, 0.02)
-        #         glVertex3f(x + 0.1, y, 0.02)
-        #         # Vertical line of cross
-        #         glVertex3f(x, y - 0.1, 0.02)
-        #         glVertex3f(x, y + 0.1, 0.02)
-        #         glEnd()
-
         # Draw axes
         glLineWidth(5)
         glBegin(GL_LINES)
