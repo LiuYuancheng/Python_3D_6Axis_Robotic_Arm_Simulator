@@ -60,7 +60,7 @@ LOG_EXCEPT  = 3
 
 #-------<GLOBAL VARIABLES (start with "g")>------------------------------------
 # VARIABLES are the built in data type.
-def gDebugPrint(msg, prt=True, logType=None):
+def gDebugPrint(msg, prt=True, logType=LOG_INFO):
     if prt: print(msg)
     if logType == LOG_WARN:
         Log.warning(msg)

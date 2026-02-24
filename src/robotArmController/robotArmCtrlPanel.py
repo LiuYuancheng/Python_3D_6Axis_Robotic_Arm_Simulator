@@ -139,5 +139,5 @@ class angleDisplayPanel(wx.Panel):
             update the panel, if called as updateDisplay(updateFlag=?) the function
             will set the self update flag.
         """
-        self.Refresh(True)
+        self.Refresh(updateFlag)
         self.Update()

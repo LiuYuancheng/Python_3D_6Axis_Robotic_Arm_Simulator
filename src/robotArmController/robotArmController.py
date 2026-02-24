@@ -7,7 +7,7 @@
 #
 # Author:      Yuancheng Liu
 #
-# Version:     v_0.0.1
+# Version:     v_0.0.2
 # Created:     2026/02/11
 # Copyright:   Copyright (c) 2026 LiuYuancheng
 # License:     MIT License  
@@ -24,7 +24,7 @@ import robotArmCtrlPanel as pl
 import robotArmCtrlManger as mgr
 
 FRAME_SIZE = (1320, 735)
-PERIODIC = 300      # update in every 500ms
+PERIODIC = 300      # update in every 300ms
 
 #-----------------------------------------------------------------------------
 #-----------------------------------------------------------------------------
@@ -34,19 +34,16 @@ class UIFrame(wx.Frame):
         """ Init the UI and parameters """
         wx.Frame.__init__(self, parent, id, title, size=FRAME_SIZE)
         self.SetBackgroundColour(wx.Colour(200, 210, 200))
-        #self.SetTransparent(gv.gTranspPct*255//100)
         self.SetIcon(wx.Icon(gv.ICO_PATH))
-        # Build UI sizer
         self.connected = False
         # load the action config files
         self.actCfgFiles = [filename for filename in os.listdir(gv.SCE_FD) if filename.endswith('.json')]
         self.tasksList = []
         self.scenarioName = None
-
+        # Build UI sizer
         self.SetSizer(self._buildUISizer())
         self.statusbar = self.CreateStatusBar(1)
         self.statusbar.SetStatusText('Test mode: %s' %str(gv.gTestMD))
-
         # Set the periodic call back
         self.lastPeriodicTime = time.time()
         self.timer = wx.Timer(self)
@@ -54,20 +51,20 @@ class UIFrame(wx.Frame):
         self.Bind(wx.EVT_TIMER, self.periodic)
         self.timer.Start(PERIODIC)  # every 500 ms
         self.Bind(wx.EVT_CLOSE, self.onClose)
-
-        if not gv.gTestMD:
+        # Connect to the PLC if not under test mode.
+        if not gv.gTestMD: 
             gv.iDataMgr = mgr.plcDataManager(self)
             gv.iDataMgr.start()
 
-#--UIFrame---------------------------------------------------------------------
+    #--UIFrame---------------------------------------------------------------------
     def _buildUISizer(self):
         """ Build the main UI Sizer. """
         flagsL = wx.LEFT
         mSizer = wx.BoxSizer(wx.VERTICAL)
         mSizer.AddSpacer(5)
-        # Row 0 
+        # Row 0 Connection display section
         hbox0 = wx.BoxSizer(wx.HORIZONTAL)
-        self.commChoice = wx.Choice(self, size = (120, 30), choices = ['OPCUA : TCP',])
+        self.commChoice = wx.Choice(self, size = (120, 30), choices = ['OPCUA : TCP', 'OPCUA : HTTPS'])
         self.commChoice.SetSelection(0)
         hbox0.Add(self.commChoice, flag=flagsL | wx.CENTER, border=2)
         hbox0.AddSpacer(10)
@@ -79,7 +76,8 @@ class UIFrame(wx.Frame):
         mSizer.Add(wx.StaticLine(self, wx.ID_ANY, size=(1310, -1),
                         style=wx.LI_HORIZONTAL), flag=wx.LEFT, border=2)
         mSizer.AddSpacer(10)
-        # Row 1
+        
+        # Row 1 Robot Arm display and control panel.
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         # Cube sensor display 
         gv.iGridPanel = pl.cubeSensorPanel(self)
@@ -109,7 +107,7 @@ class UIFrame(wx.Frame):
         mSizer.Add(wx.StaticLine(self, wx.ID_ANY, size=(1310, -1),
                         style=wx.LI_HORIZONTAL), flag=wx.LEFT, border=2)
         mSizer.AddSpacer(10)
-        # Row 2 
+        # Row 2 Cube grab control and action scenario control.
         hbox3 = wx.BoxSizer(wx.HORIZONTAL)
         self.retBt = wx.Button(self, label='Reset Position', size=(100, 22))
         self.retBt.Bind(wx.EVT_BUTTON, self.onReset)
@@ -135,12 +133,12 @@ class UIFrame(wx.Frame):
         self.gripDis = pl.angleDisplayPanel(self, "Gripper", angleS=ct.IV_ARM_ANGLE_6, angleC=ct.IV_ARM_ANGLE_6)
         sizer.Add(self.gripDis, flag=wx.LEFT, border=2)
         sizer.AddSpacer(5)
-        self.gripperCtrl = wx.Slider(self, value = int(ct.IV_ARM_ANGLE_6), minValue = 0, maxValue = 100, size=(240, 30),
-        style = wx.SL_HORIZONTAL|wx.SL_LABELS)
+        self.gripperCtrl = wx.Slider(self, value=int(ct.IV_ARM_ANGLE_6), minValue=0, maxValue=100, size=(240, 30),
+                                     style=wx.SL_HORIZONTAL | wx.SL_LABELS)
         sizer.Add(self.gripperCtrl, flag=wx.CENTRE)
         sizer.AddSpacer(5)
         return sizer
-    
+
     #--UIFrame---------------------------------------------------------------------
     def _buildWristRollSizer(self):
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -201,9 +199,20 @@ class UIFrame(wx.Frame):
         sizer.AddSpacer(5)
         return sizer
 
+    #-----------------------------------------------------------------------------
+    def getAngleControlValues(self):
+        return [self.baseDisCtrl.GetValue(),
+                self.shoulderDisCtrl.GetValue(),
+                self.elbowDisCtrl.GetValue(),
+                self.wristPitchDisCtrl.GetValue(),
+                self.wristRollDisCtrl.GetValue(),
+                self.gripperCtrl.GetValue()]
+
+    #-----------------------------------------------------------------------------
     def onReset(self, event):
         self.commMgr.addRestTask()
 
+    #-----------------------------------------------------------------------------
     def onExecute(self, event):
         if self.tasksList and len(self.tasksList) > 0:
             print("Execute scenario: %s" %str(self.scenarioName))
@@ -215,6 +224,7 @@ class UIFrame(wx.Frame):
         else:
             print("No action in scenario!")
 
+    #-----------------------------------------------------------------------------
     def setConnection(self, connFlg):
         self.connected = bool(connFlg)
         colourStr = 'GREEN' if connFlg else 'GRAY'
@@ -222,7 +232,7 @@ class UIFrame(wx.Frame):
         self.serialLedBt.SetBackgroundColour(wx.Colour(colourStr))
         self.serialLedBt.SetLabel(labelStr)
     
-#-----------------------------------------------------------------------------
+    #-----------------------------------------------------------------------------
     def onLoadScenario(self, event):
         self.scenarioDialog = wx.SingleChoiceDialog(self,
                                                     'Select Scenario', 
@@ -240,7 +250,7 @@ class UIFrame(wx.Frame):
         self.scenarioDialog.Destroy()
         self.scenarioDialog = None
 
-
+    #-----------------------------------------------------------------------------
     def onLoad(self, event):
         taskList = [('grip', '220'), ('base', '90'), ('shld', '155'), ('elbw', '90'), ('wrtP', '205'),
                     ('wrtR', '150'),
@@ -252,7 +262,7 @@ class UIFrame(wx.Frame):
         for mvtask in taskList:
             self.commMgr.addMotorMovTask(mvtask[0], mvtask[1])
 
-#--UIFrame---------------------------------------------------------------------
+    #--UIFrame---------------------------------------------------------------------
     def periodic(self, event):
         """ Call back every periodic time."""
         now = time.time()
@@ -260,10 +270,6 @@ class UIFrame(wx.Frame):
             #print("main frame update at %s" % str(now))
             self.lastPeriodicTime = now
             self.updateSensorInfo()
-            # update the display
-            #angles = self.commMgr.getModtorPos()
-            #if not angles is None:
-            #    self.updateDisplay(angles)
             if gv.iGridPanel: gv.iGridPanel.updateDisplay()
             self.baseDis.updateDisplay()
             self.shoulderDis.updateDisplay()
@@ -272,10 +278,7 @@ class UIFrame(wx.Frame):
             self.wristRollDis.updateDisplay()
             self.gripDis.updateDisplay()
 
-    def getAngleControlValues(self):
-        return [self.baseDisCtrl.GetValue(), self.shoulderDisCtrl.GetValue(), self.elbowDisCtrl.GetValue(),
-                self.wristPitchDisCtrl.GetValue(), self.wristRollDisCtrl.GetValue(), self.gripperCtrl.GetValue()]
-
+    #-----------------------------------------------------------------------------
     def updateSensorInfo(self):
         if gv.iDataMgr:
             dataDict = gv.iDataMgr.getSensorDataDict()
@@ -294,6 +297,7 @@ class UIFrame(wx.Frame):
             self.gripDis.setControlAngle(int(self.gripperCtrl.GetValue()))
 
     def onClose(self, event):
+        if gv.iDataMgr: gv.iDataMgr.stop()
         self.Destroy()
 
 #-----------------------------------------------------------------------------
