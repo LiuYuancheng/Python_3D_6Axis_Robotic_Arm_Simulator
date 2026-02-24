@@ -134,7 +134,7 @@ class angleDisplayPanel(wx.Panel):
         self.angleC = int(angle)
 
     #-----------------------------------------------------------------------------
-    def updateDisplay(self, updateFlag=None):
+    def updateDisplay(self, updateFlag=True):
         """ Set/Update the display: if called as updateDisplay() the function will 
             update the panel, if called as updateDisplay(updateFlag=?) the function
             will set the self update flag.
