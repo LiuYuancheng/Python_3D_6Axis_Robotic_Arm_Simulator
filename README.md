@@ -30,6 +30,12 @@ This project, **3D_6Axis_Robotic_Arm_Simulator with Python–wxPython–OpenGL a
 
 #### 1.2 Introduction of Project Background
 
+Two years ago I have created a project to control the Braccio Plus Robot Arm: https://www.linkedin.com/pulse/braccio-plus-robot-arm-controller-yuancheng-liu-h5gfc, but this need to hardware so it it difficult for using in cyber exercise and training which need more than one set of the environment. 
+
+![](doc/img/assemble.png)
+
+
+
 The idea for this project is inspired by Prof. Liu YaDong’s course "[A Robot Simulator Developed by Python, wxPython, VTK with OPC UA Support](https://youtu.be/zG4QcdsL4rM?si=WMlkdku4BwK09EiY)", as the course program source code is not publicly available and the 3D model resources TLS file for VTK needs to purchase, I did some modification of the design with simplified approach and free lib and added some additional functions : 
 
 - Use `OpenGL` to replace the `VTK`  to construct a simplified 3D robot arm in the canvas 
@@ -108,6 +114,47 @@ The **SCADA/HMI module** provides a user-facing interface for monitoring and con
 
 ------
 
+### 3. Implement of Robot Arm Simulator 
+
+This section will introduce the detailed implementation of the robot arm simulator. The simulator main UI frame is build by Wxpython and the Robot arm display is built by OpenGL.GL/GLU/GLUT. The simulator can run independently without the other module as we also provided the local control panel. The detailed UI view and function are marked in the below diagram:
+
+![](doc/img/s_05.png)
+
+#### 3.1 3D scene module implement
+
+The arm includes 4 links: 
+
+| Link Index | Color  | Connection        | Length            |
+| ---------- | ------ | ----------------- | ----------------- |
+| Link-00    | Red    | Base to shoulder  | length = 2.0 unit |
+| Link-01    | Green  | Shoulder to elbow | length = 1.5 unit |
+| Link-02    | Blue   | Elbow to wrist    | length = 1.0 unit |
+| Link-03    | Yellow |                   |                   |
+
+The robot arm includes 6 joints with the sensors and server motors: 
+
+| Joint Index | Joint Function           | Angle Sensor    | Servo Motor    | Rotate Range  | Control Slider                       |
+| ----------- | ------------------------ | --------------- | -------------- | ------------- | ------------------------------------ |
+| Axis-0      | Base rotation (X, Y)     | Angle Sensor 01 | Servo Motor 01 | (-180°, 180°) | Base Servo Motor Control             |
+| Axis-1      | Shoulder rotation (Y, Z) | Angle Sensor 02 | Servo Motor 02 | (-90°, 90°)   | Should Servo Motor Control           |
+| Axis-2      | Elbow rotation (Y, Z)    | Angle Sensor 03 | Servo Motor 03 | (-180°, 180°) | Elbow Servo Motor Control            |
+| Axis-3      | Wrist rotation (Y, Z)    | Angle Sensor 04 | Servo Motor 04 | (-90°, 90°)   | Wrist Servo Motor Control            |
+| Axis-4      | Gripper rotation (X, Y)  | Angle Sensor 05 | Servo Motor 06 | (-180°, 180°) | Gripper Rotation Servo Motor Control |
+| Axis-5      | Gripper opening          | Angle Sensor 06 | Servo Motor 07 | (0°, 100°)    | Gripper Opening Servo Motor Control  |
+
+#### 3.2 Operation Function Implement
+
+The gripper will always point down with the Z-Axis, as the OpenGL lib doesn't provide the physical object interaction function and the gravity function. This is how I implement the functions: 
+
+Grab and release the cube: if the gripper is at the same position of the cube in the 0.04 unit range, when the gripper is closing, the gripper pressure sensor will try to detect the interaction with the cube, if the both griper fingers touch the cube surface, the gripper motor will stop and the arm can grab the cube and angle will not decrease. When the cube is grabbed, its color will be changed to orange color as shown below image. If the user pressed the release button the gripper angle will keep increase until the pressure sensor doesn't get value 0. 
+
+![](doc/img/s_06.png)
+
+Gravity function: If the cube is not grabbed by the Arm, in the system main FPS refresh loop, it will keep decrease the cube Z coordinate until the cube button touch the ground. 
+
+The calculated gripper position and the   cube position sensor's reading will also shown at the local control panel. The If you want to reset the scenario press the reset button. 
+
+The simulator will also start a UDP server thread to handler all the data fetching and motor control request from other module, you can also create your program and use the API (in `lib/physicalWorldComm.py`) to control and monitor the robot arm .
 
 
 
@@ -116,11 +163,22 @@ The **SCADA/HMI module** provides a user-facing interface for monitoring and con
 
 
 
-The 3D robot Arm simulator will simulate generate the sensors value of the cube position and the 6 joint's current angles data, the OPC-UA PLC module will fetch the data regualarly via UDP message. Here I use the UDP message to simulate the PLC collect the electrical signal or analog signal from physical sensor device. Then the data will be saved into the related UA data value, the PLC will make decision of the module based on the control UA data, such as if the user want to move the arm shoulder to angle1 but the current sensor value is angle value 2, then the PLC will send the motor control signal out from PLC to the related simulated motor in the 3D robot arm simulator until the sensor report the arm moved to the correct position. 
+
+
+
+
+
+
+
+
+
+
+
+
 
 For The OPCUA plc simulation module I use this project [Python Virtual PLC Simulator with IEC 62541 OPC-UA-TCP Communication Protocol](https://www.linkedin.com/pulse/python-virtual-plc-simulator-iec-62541-opc-ua-tcp-protocol-liu-pm1pc) to implement the ladder logic control, UA data storage and process. For the detail you can check this link: https://github.com/LiuYuancheng/PLC_and_RTU_Simulator/tree/main/OPCUA_PLC_Simulator
 
-On the controller side, it will start a OPCUA client thread to connect to the OPCUA server in the PLC to fetch the data and visualize them. The Cube current 3D position will be convert to ground projection position then shown on the cube position map, then the controller can identify whether the robot arm is long enough reach the cube and calculate the angle of each joint to reach the cube. Each join the real time position will shown in the 6 Axis display and the user can user the slider to manually adjust the servo motor's angle. It will also provide the action sequence selection/upload function for user to upload a pre-set arm movement sequence then the arm will keep repeat finish the actions automatically. 
+
 
 
 
