@@ -254,7 +254,7 @@ The remote controller provide the interface to display the cube position, the cu
 
 User can drag the slide to move each joint's servo motor, if UI will show whether the arm has reached to the position user configured.
 
-For auto cube grab, as the cube position is know, so we can use the below algorithm and formular to calculate angle we need to set for the motors: 
+The controller provide the function for robot arm to auto search and grab the cube. For auto cube grab, as the cube position is know, so we can use the below algorithm and formular to calculate angle we need to set for the motors: 
 
 ![](doc/img/s_09.png)
 
@@ -262,53 +262,87 @@ For auto cube grab, as the cube position is know, so we can use the below algori
 
 The angle and cube on ground position (x, y) relation ship is shown below
 
+- Axis-0: Base Rotation Angle = arctan(y/x), if x=0 and y >0 : 90, if x=0 y<0: -90.
 - Cube distance = sqrt(x^2 + y^2)
-- theta1 : Shoulder motor Angle
-- theta2 : Elbow motor angle
-- theta3: Wrist motor angle
+- theta1 : Shoulder motor target Angle
+- theta2 : Elbow motor target  angle
+- theta3: Wrist motor target  angle
 - a = sin(90-theta1)\*1.5
 - b = sin(90-theta1-theta2)\*1
 - c = sin(90-theta1-theta2-theta3)\*0.5
 - Cube distance  = a +b +c 
 
+This is the code example to calculate the angles
 
+```
+def getRobotJointAngles(x, y, resolution=0.5):
+    """
+        Compute robot arm joint angles (theta1, theta2, theta3) for a target (x, y) position.
+        
+        Arm segments:
+            a = sin(90 - theta1) * 1.5         (shoulder, length 1.5)
+            b = sin(90 - theta1 - theta2) * 1  (elbow, length 1.0)
+            c = sin(90 - theta1 - theta2 - theta3) * 0.5  (wrist, length 0.5)
+            distance = a + b + c
+        
+        Args:
+            x          : Target x coordinate
+            y          : Target y coordinate
+            resolution : Angle search step in degrees (smaller = more accurate, slower)
+        
+        Returns:
+            Best (theta1, theta2, theta3) tuple in degrees, or None if unreachable
+    """
+    target_distance = np.sqrt(x**2 + y**2)
+    if target_distance > 2.4:
+        print(f"Target distance {target_distance:.3f} exceeds max reach of 3.0")
+        return None
+    theta1_range = np.arange(-80, 80 + resolution, resolution)
+    theta2_range = np.arange(-180, 180 + resolution, resolution)
+    theta3_range = np.arange(-90, 90 + resolution, resolution)
+    best_solution = None
+    best_error = 0.04
+    for t1, t2, t3 in product(theta1_range, theta2_range, theta3_range):
+        t1_r = np.radians(t1)
+        t2_r = np.radians(t2)
+        t3_r = np.radians(t3)
+        a = np.sin(np.pi/2 - t1_r) * 1.5
+        b = np.sin(np.pi/2 - t1_r - t2_r) * 1.0
+        c = np.sin(np.pi/2 - t1_r - t2_r - t3_r) * 0.5
+        computed_distance = a + b + c
+        error = abs(computed_distance - target_distance)
+        if error < best_error:
+            best_error = error
+            best_solution = (round(t1, 2), round(t2, 2), round(t3, 2))
 
-
-
-
-
-
-
-
-
-
-
-Main UI will be like this:
-
-![](doc/img/s_01.png)
-
-```python
-# Author:      Yuancheng Liu
-# Created:     2026/01/18
-# Version:     v_0.0.1
-# Copyright:   Copyright (c) 2026 Liu Yuancheng
-# License:     MIT License
+        if error < 0.01:  # Early exit if close enough
+            break
+    #print(f"Target distance : {target_distance:.4f}")
+    #print(f"Best match error: {best_error:.4f}")
+    #print(f"Angles => theta1: {best_solution[0]}°, theta2: {best_solution[1]}°, theta3: {best_solution[2]}°")
+    return best_solution
 ```
 
-Controller UI:
+Then we can calculate one set of the joint angle value and send the to PLC to control the robot arm to auto grab the cube. A short demo is shown below:
+
+![](doc/img/autoGrab.gif)
+
+Press the button "auto grab the cube" then the auto cube grab process will start.
+
+Load the pre action: 
+
+The user can load a json file with the movement he want to the robot to finish. The task list example is shown below:
+
+```
+[('grip', '220'), ('base', '90'), ('shld', '155'), ('elbw', '90'), ('wrtP', '205'), ('wrtR', '150'),('grip', '160'),('elbw', '130'),('base', '180'),('grip', '220'),]
+```
+
+When the user press the "Execute the scenario", the controller will guide the arm to finish the action one by one. 
 
 
 
-The Idea is from this video:
 
 
-
-This module is a simple simulator for a robotic arm by using the wxPython and OpenGL library.
-
-
-
-
-
-
+Reference: 
 
 Python VTK lib: https://docs.vtk.org/en/latest/about.html

@@ -53,7 +53,6 @@ def getRobotJointAngles(x, y, resolution=0.5):
 
     return best_solution
 
-
 # --- Example usage ---
 if __name__ == "__main__":
     x, y = 1.5, -1.31
