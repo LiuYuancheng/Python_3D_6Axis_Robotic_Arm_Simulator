@@ -114,81 +114,137 @@ The **SCADA/HMI module** provides a user-facing interface for monitoring and con
 
 ------
 
-### 3. Implement of Robot Arm Simulator 
+### 3. Implementation of Robot Arm Simulator
 
-This section will introduce the detailed implementation of the robot arm simulator. The simulator main UI frame is build by Wxpython and the Robot arm display is built by OpenGL.GL/GLU/GLUT. The simulator can run independently without the other module as we also provided the local control panel. The detailed UI view and function are marked in the below diagram:
+This section describes the detailed implementation of the **Robot Arm Simulator**, which represents the **Level 0 (physical/field layer)** of the system. The simulator is developed using:
+
+- **wxPython** → for the main GUI framework host the 3D scene and interact with user's action.
+- **OpenGL (GL / GLU / GLUT)** → for real-time 3D robot arm and scene rendering
+
+The overall UI layout and functional components are illustrated below:
 
 ![](doc/img/s_05.png)
 
-#### 3.1 3D scene module implement
+The module can run independently from other system components. A built-in local control panel allows users to directly manipulate the robot arm, making it suitable for standalone testing, debugging, and demonstration.
 
-The arm includes 4 links: 
+#### 3.1 3D Scene Module Implementation
 
-| Link Index | Color  | Connection        | Length            |
-| ---------- | ------ | ----------------- | ----------------- |
-| Link-00    | Red    | Base to shoulder  | length = 2.0 unit |
-| Link-01    | Green  | Shoulder to elbow | length = 1.5 unit |
-| Link-02    | Blue   | Elbow to wrist    | length = 1.0 unit |
-| Link-03    | Yellow |                   |                   |
+The 3D robot arm includes 4 cylinder Links with different length and multi-axis robotic joints (base, shoulder, elbow, wrist, and gripper) with the rotation range. 
 
-The robot arm includes 6 joints with the sensors and server motors: 
+**3.1.1 Robot Arm cylinder Links** 
 
-| Joint Index | Joint Function           | Angle Sensor    | Servo Motor    | Rotate Range  | Control Slider                       |
-| ----------- | ------------------------ | --------------- | -------------- | ------------- | ------------------------------------ |
-| Axis-0      | Base rotation (X, Y)     | Angle Sensor 01 | Servo Motor 01 | (-180°, 180°) | Base Servo Motor Control             |
-| Axis-1      | Shoulder rotation (Y, Z) | Angle Sensor 02 | Servo Motor 02 | (-90°, 90°)   | Should Servo Motor Control           |
-| Axis-2      | Elbow rotation (Y, Z)    | Angle Sensor 03 | Servo Motor 03 | (-180°, 180°) | Elbow Servo Motor Control            |
-| Axis-3      | Wrist rotation (Y, Z)    | Angle Sensor 04 | Servo Motor 04 | (-90°, 90°)   | Wrist Servo Motor Control            |
-| Axis-4      | Gripper rotation (X, Y)  | Angle Sensor 05 | Servo Motor 06 | (-180°, 180°) | Gripper Rotation Servo Motor Control |
-| Axis-5      | Gripper opening          | Angle Sensor 06 | Servo Motor 07 | (0°, 100°)    | Gripper Opening Servo Motor Control  |
+The robotic arm is modeled as a kinematic chain consisting of four rigid links connected one by one: 
 
-#### 3.2 Operation Function Implement
+| Link Index | Color  | Connection       | Length    |
+| ---------- | ------ | ---------------- | --------- |
+| Link-00    | Red    | Base → Shoulder  | 2.0 units |
+| Link-01    | Green  | Shoulder → Elbow | 1.5 units |
+| Link-02    | Blue   | Elbow → Wrist    | 1.0 units |
+| Link-03    | Yellow | Wrist → Gripper  | 0.5 units |
 
-The gripper will always point down with the Z-Axis, as the OpenGL lib doesn't provide the physical object interaction function and the gravity function. This is how I implement the functions: 
+**3.1.2 Joint and Actuator Modeling**
 
-Grab and release the cube: if the gripper is at the same position of the cube in the 0.04 unit range, when the gripper is closing, the gripper pressure sensor will try to detect the interaction with the cube, if the both griper fingers touch the cube surface, the gripper motor will stop and the arm can grab the cube and angle will not decrease. When the cube is grabbed, its color will be changed to orange color as shown below image. If the user pressed the release button the gripper angle will keep increase until the pressure sensor doesn't get value 0. 
+The robot arm includes **six controllable axes**, each associated with: one simulated angle sensor (feedback), A servo motor (actuator), A defined rotation range and the motor can by controlled directly via the corresponding UI control slider in the control panel
+
+| Axis   | Function                | Surface | Sensor          | Actuator       | Range         | UI Control              |
+| ------ | ----------------------- | ------- | --------------- | -------------- | ------------- | ----------------------- |
+| Axis-0 | Base rotation           | X - Y   | Angle Sensor 01 | Servo Motor 01 | (-180°, 180°) | Base slider             |
+| Axis-1 | Shoulder rotation       | Y - Z   | Angle Sensor 02 | Servo Motor 02 | (-90°, 90°)   | Shoulder slider         |
+| Axis-2 | Elbow rotation          | Y - Z   | Angle Sensor 03 | Servo Motor 03 | (-180°, 180°) | Elbow slider            |
+| Axis-3 | Wrist rotation          | Y - Z   | Angle Sensor 04 | Servo Motor 04 | (-90°, 90°)   | Wrist slider            |
+| Axis-4 | Gripper rotation        | X - Y   | Angle Sensor 05 | Servo Motor 05 | (-180°, 180°) | Gripper rotation slider |
+| Axis-5 | Gripper opening/closing |         | Angle Sensor 06 | Servo Motor 06 | (0°, 100°)    | Gripper opening slider  |
+
+To simplify the simulation and avoid complex physics modeling, the gripper is constrained to always point downward along the **Z-axis**. This ensures stable object interaction without requiring a full physics engine.
+
+#### 3.2 Operation Function Implementation
+
+All the robot arm joint transformations are applied sequentially, forming a complete forward kinematics chain for real-time pose updates. In this section we also add some physics simulation function to implement the collision dynamics or gravity simulation in OpenGL. 
+
+**3.2.1 Object Interaction: Grab and Release Mechanism**
+
+The simulator implements a simplified but effective grasping logic when the gripper position is within a 0.04-unit threshold of the cube:
+
+- The gripper closing action triggers a virtual pressure sensor check
+
+- If both gripper fingers “touch” the cube surface: The gripper motor stops closing
+
+- The cube is considered successfully grasped and attached to the gripper and follows its movement
+- Then he cube color changes to orange to indicate a successful grasp (As shown in the below diagram)
 
 ![](doc/img/s_06.png)
 
-Gravity function: If the cube is not grabbed by the Arm, in the system main FPS refresh loop, it will keep decrease the cube Z coordinate until the cube button touch the ground. 
+**3.2.2 Gravity Simulation**
 
-The calculated gripper position and the   cube position sensor's reading will also shown at the local control panel. The If you want to reset the scenario press the reset button. 
+A lightweight gravity visually effective model is implemented within the main rendering loop:
 
-The simulator will also start a UDP server thread to handler all the data fetching and motor control request from other module, you can also create your program and use the API (in `lib/physicalWorldComm.py`) to control and monitor the robot arm .
+- If the cube is not attached to the gripper : Its Z-axis position decreases gradually
+- The motion continues until the cube reaches the ground plane
 
+**3.2.3 Sensor Feedback and Local Monitoring**
 
+- The simulator continuously computes and displays: Gripper end-effector position (calculated via forward kinematics), Cube position (ground sensor reading) and Joint angles and gripper state.
+- All values are updated in real time and shown in the local control panel, allowing users to observe system state changes during operation.
+- A reset function is also provided to restore the simulation to its initial state.
 
+**3.2.4 External Communication Interface (UDP API)**
 
-
-
-
-
-
-
-
-
-
-
+- To integrate with higher-level modules, the simulator includes a **UDP server thread** that handles: Sensor data transmission (simulated wire connect to PLC inputs contact) and Motor control commands (simulated wire connect to PLC outputs coil)
+- Additionally, users can develop custom programs to interact with the simulator via the provided API in Library: `lib/physicalWorldComm.py` to send control commands, retrieve sensor data, monitor system state
 
 
 
+------
 
+### 4. Implementation of OPC-UA PLC
 
-
+The OPC-UA PLC module represents the Level 1 (Control Layer) of the system and serves as the central decision-making unit. It is responsible for processing sensor data, executing control logic, and coordinating communication between the physical simulator (Level 0) and the supervisory controller (Level 2).
 
 For The OPCUA plc simulation module I use this project [Python Virtual PLC Simulator with IEC 62541 OPC-UA-TCP Communication Protocol](https://www.linkedin.com/pulse/python-virtual-plc-simulator-iec-62541-opc-ua-tcp-protocol-liu-pm1pc) to implement the ladder logic control, UA data storage and process. For the detail you can check this link: https://github.com/LiuYuancheng/PLC_and_RTU_Simulator/tree/main/OPCUA_PLC_Simulator
 
+#### 4.1 OPC UA Variable Mapping
+
+| UA-Object                      | Variable Name | UA_Type    | PLC I/O Type | Related simulator Component          |
+| ------------------------------ | ------------- | ---------- | ------------ | ------------------------------------ |
+| RobotArmCtrl - VN_GRIPPER_CTRL | gripperCtrl   | `UA-Bool`  | PLC Input    | Gripper pressure sensor              |
+| RobotArmCtrl - VN_CUBE_POS_X   | cubePosX      | `UA-Float` | PLC Input    | Cube position sensor                 |
+| RobotArmCtrl - VN_CUBE_POS_Y   | cubePosY      | `UA-Float` | PLC Input    | Cube position sensor                 |
+| RobotArmCtrl - VN_CUBE_POS_Z   | cubePosZ      | `UA-Float` | PLC Input    | Cube position sensor                 |
+| RobotArmCtrl - VN_ARM_ANGLE_1  | armAngle1     | `UA-Float` | PLC Input    | Base rotation angle sensor           |
+| RobotArmCtrl - VN_ARM_ANGLE_2  | armAngle2     | `UA-Float` | PLC Input    | Shoulder rotation angle sensor       |
+| RobotArmCtrl - VN_ARM_ANGLE_3  | armAngle3     | `UA-Float` | PLC Input    | Elbow rotation angle sensor          |
+| RobotArmCtrl - VN_ARM_ANGLE_4  | armAngle4     | `UA-Float` | PLC Input    | Wrist rotation angle sensor          |
+| RobotArmCtrl - VN_ARM_ANGLE_5  | armAngle5     | `UA-Float` | PLC Input    | Gripper rotation angle sensor        |
+| RobotArmCtrl - VN_ARM_ANGLE_6  | armAngle6     | `UA-Float` | PLC Input    | Gripper opening/closing angle sensor |
+| RobotArmCtrl - VN_MOTOR1_CTRL  | motor1Ctrl    | `UA-Int16` | PLC Output   | Servo Motor 01                       |
+| RobotArmCtrl - VN_MOTOR2_CTRL  | motor2Ctrl    | `UA-Int16` | PLC Output   | Servo Motor 02                       |
+| RobotArmCtrl - VN_MOTOR3_CTRL  | motor3Ctrl    | `UA-Int16` | PLC Output   | Servo Motor 03                       |
+| RobotArmCtrl - VN_MOTOR4_CTRL  | motor4Ctrl    | `UA-Int16` | PLC Output   | Servo Motor 04                       |
+| RobotArmCtrl - VN_MOTOR5_CTRL  | motor5Ctrl    | `UA-Int16` | PLC Output   | Servo Motor 05                       |
+| RobotArmCtrl - VN_MOTOR5_CTRL  | motor6Ctrl    | `UA-Int16` | PLC Output   | Servo Motor 06                       |
+| HMIRequest - VN_Motor1_TGT     | motor1Target  | `UA-Int16` | N.A          | N.A (Request from Remote Controller) |
+| HMIRequest - VN_Motor2_TGT     | motor2Target  | `UA-Int16` | N.A          | N.A (Request from Remote Controller) |
+| HMIRequest - VN_Motor3_TGT     | motor3Target  | `UA-Int16` | N.A          | N.A (Request from Remote Controller) |
+| HMIRequest - VN_Motor4_TGT     | motor4Target  | `UA-Int16` | N.A          | N.A (Request from Remote Controller) |
+| HMIRequest - VN_Motor5_TGT     | motor4Target  | `UA-Int16` | N.A          | N.A (Request from Remote Controller) |
+| HMIRequest - VN_Motor6_TGT     | motor6Target  | `UA-Int16` | N.A          | N.A (Request from Remote Controller) |
+
+#### 4.2 PLC Control Cycle Workflow
+
+The PLC operates in a **cyclic execution model**, similar to real industrial controllers. Each cycle consists of data acquisition, processing, and output update. The workflow is illustrated below:
+
+![](doc/img/s_07.png)
+
+- **Input Data Acquisition (Fetch Sensors)**: The PLC simulates the collection of field data by fetching the current 3D cube coordinates and the 6-axis joint angles from the robot arm simulator.
+- **OPC-UA Server Update (Variable Sync)**: The fetched sensor data is mapped to internal variables and pushed to the OPC-UA server to ensure the "Cyber Twin" reflects the physical state.
+- **One-Time Initialization (Sync Parameters)**: During the first cycle (`initFlag`), the system synchronizes all internal control parameters with the OPC-UA server to ensure consistent starting states.
+- **Control Logic Execution (Read & Compare)**: The PLC reads the target control values (e.g., desired motor angles or gripper states) from the OPC-UA server and compares them against its local internal state.
+- **Change Detection (Set Flags)**: If a discrepancy is detected between the OPC-UA target value and the local state, the PLC triggers internal flags (`sendArmCtrlFlag` or `sendGripperCtrlFlag`) to indicate an update is required.
+- **Output Update (Command Actuators)**: If flags are set, the PLC sends command signals (UDP messages) back to the 3D Robot Arm Simulator to adjust the servo motors or gripper state.
 
 
 
-
-
-
-
-
-
-
-
+------
 
 
 
