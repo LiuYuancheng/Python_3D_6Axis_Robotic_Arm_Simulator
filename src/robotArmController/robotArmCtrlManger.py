@@ -14,6 +14,7 @@
 # License:     MIT License  
 #-----------------------------------------------------------------------------
 
+import math
 import time
 import asyncio
 import threading
@@ -110,6 +111,10 @@ class plcDataManager(threading.Thread):
             self.dataVariableDict[ct.VN_MOTOR6_CTRL] = round(val, 1)
             val = await self.armOPCUAclient.getVariableVal(gv.gUAnamespace, ct.OBJ_NAME, ct.VN_GRIPPER_CTRL)
             self.dataVariableDict[ct.VN_GRIPPER_CTRL] = round(val, 1)
+            # Change the angle if we do the auto grab cube
+            if gv.gAutoGrabFlag: 
+                self.setAutoGrabAngle()
+                gv.gAutoGrabFlag = False
             # check whether need to update the control
             ctrlList = gv.iMainFrame.getAngleControlValues()
             if int(ctrlList[0]) != int(self.dataVariableDict[ct.VN_MOTOR1_CTRL]):
@@ -132,5 +137,19 @@ class plcDataManager(threading.Thread):
     def getSensorDataDict(self):
         return self.dataVariableDict
 
+    def setAutoGrabAngle(self):
+        x = self.dataVariableDict[ct.VN_CUBE_POS_X]
+        y = self.dataVariableDict[ct.VN_CUBE_POS_Y]
+        baseAngle = 0 
+        if x == 0 and y > 0:
+            baseAngle = 90
+        elif x == 0 and y < 0:
+            baseAngle = -90
+        else:
+            baseAngle = math.degrees(math.atan2(y, x))
+        
+        gv.iMainFrame.baseDisCtrl.SetValue(int(baseAngle))
+
+    #-----------------------------------------------------------------------------  
     def stop(self):
         self.isRunning = False

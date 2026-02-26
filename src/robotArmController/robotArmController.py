@@ -113,6 +113,12 @@ class UIFrame(wx.Frame):
         self.retBt.Bind(wx.EVT_BUTTON, self.onReset)
         hbox3.Add(self.retBt, flag=flagsL, border=2)
         hbox3.AddSpacer(10)
+
+        self.grabBt = wx.Button(self, label='Auto Grab Cube', size=(100, 22))
+        self.grabBt.Bind(wx.EVT_BUTTON, self.onAutoGrab)
+        hbox3.Add(self.grabBt, flag=flagsL, border=2)
+        hbox3.AddSpacer(10)
+
         self.loadBt = wx.Button(self, label='Load Action Scenario', size=(140, 22))
         self.loadBt.Bind(wx.EVT_BUTTON, self.onLoadScenario)
         hbox3.Add(self.loadBt, flag=flagsL, border=2)
@@ -212,6 +218,11 @@ class UIFrame(wx.Frame):
     def onReset(self, event):
         self.commMgr.addRestTask()
 
+    def onAutoGrab(self, event):
+        gv.gDebugPrint("Start auto grabbing the cube process.")
+        if gv.gAutoGrabFlag : return
+        gv.gAutoGrabFlag = True
+
     #-----------------------------------------------------------------------------
     def onExecute(self, event):
         if self.tasksList and len(self.tasksList) > 0:
@@ -296,6 +307,7 @@ class UIFrame(wx.Frame):
             self.gripDis.setSensorAngle(int(dataDict[ct.VN_ARM_ANGLE_6]))
             self.gripDis.setControlAngle(int(self.gripperCtrl.GetValue()))
 
+    #-----------------------------------------------------------------------------
     def onClose(self, event):
         if gv.iDataMgr: gv.iDataMgr.stop()
         self.Destroy()

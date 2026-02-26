@@ -264,7 +264,7 @@ class RobotArmFrame(wx.Frame):
         self.slider4.Enable(gv.gTestMD)
         self.slider5.Enable(gv.gTestMD)
         self.gripper_slider.Enable(gv.gTestMD)
-        self.grab_btn.Enable(gv.gTestMD)
+        #self.grab_btn.Enable(gv.gTestMD)
 
     #-----------------------------------------------------------------------------
     def OnSlider(self, event):

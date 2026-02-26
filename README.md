@@ -246,6 +246,35 @@ The PLC operates in a **cyclic execution model**, similar to real industrial con
 
 ------
 
+### 5. Implementation of HMI Controller
+
+The remote controller provide the interface to display the cube position, the current sensor angle value and the target motor angle. The UI will show below:
+
+![](doc/img/s_08.png)
+
+User can drag the slide to move each joint's servo motor, if UI will show whether the arm has reached to the position user configured.
+
+For auto cube grab, as the cube position is know, so we can use the below algorithm and formular to calculate angle we need to set for the motors: 
+
+![](doc/img/s_09.png)
+
+
+
+The angle and cube on ground position (x, y) relation ship is shown below
+
+- Cube distance = sqrt(x^2 + y^2)
+- theta1 : Shoulder motor Angle
+- theta2 : Elbow motor angle
+- theta3: Wrist motor angle
+- a = sin(90-theta1)\*1.5
+- b = sin(90-theta1-theta2)\*1
+- c = sin(90-theta1-theta2-theta3)\*0.5
+- Cube distance  = a +b +c 
+
+
+
+
+
 
 
 
@@ -268,7 +297,7 @@ Main UI will be like this:
 
 Controller UI:
 
-![](doc/img/s_02.png)
+
 
 The Idea is from this video:
 

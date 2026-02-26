@@ -87,6 +87,7 @@ gPlcDict = {
     'port' : int(CONFIG_DICT['OPCUA_PLC_PORT']),
 }
 gUAnamespace = 'Controller'
+gAutoGrabFlag = False 
 
 #-------<GLOBAL PARAMTERS>-----------------------------------------------------
 iMainFrame = None   # MainFrame.
