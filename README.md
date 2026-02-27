@@ -2,6 +2,8 @@
 
 **Project Design Purpose** : The goal of this project is to develop a software-based cyber-physical twin simulation system of the 3D 6-Axis Robotic Arm in OT environment utilizing `Python`, `wxPython`, `OpenGL`, and the `OPC-UA` protocol. The system design follows the international standard automation [ISA-95 (IEC/ISO 62264)](https://www.siemens.com/en-us/technology/isa-95-framework-layers/) and serves as a sophisticated Cyber Twin, bridging the gap between virtual simulation and industrial automation. 
 
+![](doc/img/logo.png)
+
 The simulation system include three main modules mirror the ISA-95 automation hierarchy: 1. Robot Arm Simulator (Level 0 - Field Level),  2. Robot Arm OPC-UA PLC (Level 1 - Control Level) and 3. User Remote Controller (Level 2 - Supervisory Level). By integrating real-time physics simulation with industrial communication standards, the project provides a safe, scalable environment for robotics control development and OT security training.
 
 The system overview demo is shown below:
@@ -28,7 +30,7 @@ The advancement of smart manufacturing and Industrial Control Systems (ICS) has 
 
 This project, **3D_6Axis_Robotic_Arm_Simulator with Python–wxPython–OpenGL and OPC-UA**, is designed to address these needs by providing a lightweight yet functional cyber-physical simulation environment. The system enables users to visualize, monitor, and control a six-axis robotic arm while emulating real industrial communication and control workflows.
 
-#### 1.2 Introduction of Project Background
+#### 1.1 Introduction of Project Background
 
 Two years ago I have created a project to control the Braccio Plus Robot Arm: https://www.linkedin.com/pulse/braccio-plus-robot-arm-controller-yuancheng-liu-h5gfc, but this need to hardware so it it difficult for using in cyber exercise and training which need more than one set of the environment. 
 
@@ -49,7 +51,7 @@ Special thanks again to Prof. Liu YaDong for sharing the original educational co
 - [Tutorial 2 --- Prepare Robot OPC UA Information Model XML for Python/VTK Robot Simulator Development](https://youtu.be/-TB65k_qBB0?si=CpBeWKdAQhpFYUeZ)
 - [Tutorial 3 --- Prepare Robot 3D Model for Python/VTK Robot Simulator Development](https://youtu.be/u3qc_QknfWA?si=vyf9p9UeCPD8qC8j)
 
-#### 1.1 Introduction of System Architecture
+#### 1.2 Introduction of System Architecture
 
 The platform is designed based on the ISA-95 automation hierarchy pyramid, extending from Level 0 (field devices) up to Level 4 (enterprise systems). The current implementation focuses on Levels 0–2 as shown below:
 
@@ -58,6 +60,19 @@ The platform is designed based on the ISA-95 automation hierarchy pyramid, exten
 1. **Robot Arm Simulator (Level 0 - Field Level)** :  This module provides a 3D OpenGL-rendered interface to visualize the physical robot arm. It simulates hardware components—such as cube position sensors,  servo motors and tactile sensors—allowing for complex actions like object manipulation (e.g., "pick-and-place" operations). It also features a localized control panel for direct manual overrides and real-time state visualization.
 2. **Robot Arm OPC-UA PLC (Level 1 - Control Level)** : Acting as the brain of the operation, this module simulates an Industrial Programmable Logic Controller (PLC). It processes incoming sensor data from the simulator and dispatches control signals back to the virtual motors, facilitating the logic loop required for autonomous or semi-autonomous motion.
 3. **User Remote Controller (Level 2 - Supervisory Level)** : This is the Human-Machine Interface (HMI) for the end-user. It establishes a secure connection to the PLC via the OPC-UA protocol, enabling remote monitoring of the arm’s telemetry and the execution of remote commands across a network.
+
+#### 1.3 Introduction of System Use Cases
+
+The modified version of this PLC controlled robot arm system is used for building the OT challenges in the below CTF competition:![](doc/img/useCase.png)
+
+**CISS 2024 Control The Orthanc Obstacles Challenge** : 
+
+- https://itrust.sutd.edu.sg/ciss-2024/
+- https://www.linkedin.com/pulse/hacking-ics-step-by-step-guide-solve-critical-it-ot-ctf-yuancheng-liu-ohjwc
+
+**Deutschlands Bester Hacker 2024 OT Challenge 1**   :
+
+- https://deutschlands-bester-hacker.de/rueckblick-deutschlands-bester-hacker-2024/
 
 
 
@@ -291,113 +306,41 @@ The detail operational steps to grab the cube is shown below:
 - Send target angles to PLC to execute motion sequence, 
 - When the arm sensor shows the arm at the correct position, send the gripper closing command to grab the cue.
 
-A demonstration of this process is shown below:
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-User can drag the slide to move each joint's servo motor, if UI will show whether the arm has reached to the position user configured.
-
-The controller provide the function for robot arm to auto search and grab the cube. For auto cube grab, as the cube position is know, so we can use the below algorithm and formular to calculate angle we need to set for the motors: 
-
-
-
-
-
-The angle and cube on ground position (x, y) relation ship is shown below
-
-- Axis-0: Base Rotation Angle = arctan(y/x), if x=0 and y >0 : 90, if x=0 y<0: -90.
-- Cube distance = sqrt(x^2 + y^2)
-- theta1 : Shoulder motor target Angle
-- theta2 : Elbow motor target  angle
-- theta3: Wrist motor target  angle
-- a = sin(90-theta1)\*1.5
-- b = sin(90-theta1-theta2)\*1
-- c = sin(90-theta1-theta2-theta3)\*0.5
-- Cube distance  = a +b +c 
-
-This is the code example to calculate the angles
-
-```
-def getRobotJointAngles(x, y, resolution=0.5):
-    """
-        Compute robot arm joint angles (theta1, theta2, theta3) for a target (x, y) position.
-        
-        Arm segments:
-            a = sin(90 - theta1) * 1.5         (shoulder, length 1.5)
-            b = sin(90 - theta1 - theta2) * 1  (elbow, length 1.0)
-            c = sin(90 - theta1 - theta2 - theta3) * 0.5  (wrist, length 0.5)
-            distance = a + b + c
-        
-        Args:
-            x          : Target x coordinate
-            y          : Target y coordinate
-            resolution : Angle search step in degrees (smaller = more accurate, slower)
-        
-        Returns:
-            Best (theta1, theta2, theta3) tuple in degrees, or None if unreachable
-    """
-    target_distance = np.sqrt(x**2 + y**2)
-    if target_distance > 2.4:
-        print(f"Target distance {target_distance:.3f} exceeds max reach of 3.0")
-        return None
-    theta1_range = np.arange(-80, 80 + resolution, resolution)
-    theta2_range = np.arange(-180, 180 + resolution, resolution)
-    theta3_range = np.arange(-90, 90 + resolution, resolution)
-    best_solution = None
-    best_error = 0.04
-    for t1, t2, t3 in product(theta1_range, theta2_range, theta3_range):
-        t1_r = np.radians(t1)
-        t2_r = np.radians(t2)
-        t3_r = np.radians(t3)
-        a = np.sin(np.pi/2 - t1_r) * 1.5
-        b = np.sin(np.pi/2 - t1_r - t2_r) * 1.0
-        c = np.sin(np.pi/2 - t1_r - t2_r - t3_r) * 0.5
-        computed_distance = a + b + c
-        error = abs(computed_distance - target_distance)
-        if error < best_error:
-            best_error = error
-            best_solution = (round(t1, 2), round(t2, 2), round(t3, 2))
-
-        if error < 0.01:  # Early exit if close enough
-            break
-    #print(f"Target distance : {target_distance:.4f}")
-    #print(f"Best match error: {best_error:.4f}")
-    #print(f"Angles => theta1: {best_solution[0]}°, theta2: {best_solution[1]}°, theta3: {best_solution[2]}°")
-    return best_solution
-```
-
-Then we can calculate one set of the joint angle value and send the to PLC to control the robot arm to auto grab the cube. A short demo is shown below:
+A demonstration of this process is shown below (Users can trigger this function via the **“Auto Grab Cube”** button.):
 
 ![](doc/img/autoGrab.gif)
 
-Press the button "auto grab the cube" then the auto cube grab process will start.
+#### 5.2 Predefined Action Sequence Execution
 
-Load the pre action: 
+The controller supports loading and repeat executing predefined motion sequences from a JSON configuration.
 
-The user can load a json file with the movement he want to the robot to finish. The task list example is shown below:
+**Example Task List Json File**:
 
-```
+```json
 [('grip', '220'), ('base', '90'), ('shld', '155'), ('elbw', '90'), ('wrtP', '205'), ('wrtR', '150'),('grip', '160'),('elbw', '130'),('base', '180'),('grip', '220'),]
 ```
 
-When the user press the "Execute the scenario", the controller will guide the arm to finish the action one by one. 
+**Execution Flow**: 
 
+- User create the sequence Json file and put it folder "`src/robotArmController/Scenarios`".
+- Presses “Execute Scenario” button then the controller will sends commands one by one to the PLC. For the execution interval, it waits for each motion to complete then proceeds to the next action. 
 
+------
 
+### 6. System Setup and Usage
 
+For System Configuration and Usage, Please refer to the [System_Usage_Manual.md](System_Usage_Manual.md)
 
-Reference: 
+------
 
-Python VTK lib: https://docs.vtk.org/en/latest/about.html
+### 7. Reference Doc
+
+The **3D 6-Axis Robotic Arm Simulator** successfully demonstrates the integration of high-performance visualization and industrial-standard communication within a modular **Cyber-Physical System**. By aligning the architecture with the **ISA-95 hierarchy**, the project creates a realistic environment where Level 0 physics, Level 1 PLC logic, and Level 2 SCADA/HMI interaction coexist seamlessly. Utilizing **Python**, **wxPython**, and **OpenGL** allows for a lightweight yet powerful simulation of complex kinematics and sensor feedback, while the implementation of **OPC-UA** ensures the system remains relevant for modern smart manufacturing and OT cybersecurity research. Ultimately, this simulator serves as an accessible, hardware-independent platform for developers to test control algorithms and for security professionals to explore industrial protocol vulnerabilities in a safe, controlled sandbox.
+
+- https://www.linkedin.com/pulse/braccio-plus-robot-arm-controller-yuancheng-liu-h5gfc
+- https://www.linkedin.com/pulse/smart-iot-robot-emulator-yuancheng-liu-2v89c
+- Python VTK lib: https://docs.vtk.org/en/latest/about.html
+
+------
+
+> Last edited by LiuYuancheng (liu_yuan_cheng@hotmail.com) at 20/02/2026, if you have any question please free to message me.

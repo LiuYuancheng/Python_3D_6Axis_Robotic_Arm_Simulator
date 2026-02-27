@@ -26,6 +26,8 @@ import robotArmCtrlGlobal as gv
 import robotArmCtrlConst as ct
 import opcuaComm
 
+#-----------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
 def getRobotJointAngles(x, y, initial_guess=None):
     """
     Solve inverse kinematics for a 3-DOF robot arm.
@@ -208,7 +210,7 @@ class plcDataManager(threading.Thread):
             baseAngle = math.degrees(math.atan2(y, x))
         # calculate the angle for the shoulder, elbow and wrist
         #angles = getRobotJointAngles(x, y, resolution=5)
-        angles = solve_robot_arm(x, y)
+        angles = getRobotJointAngles(x, y)
         gv.iMainFrame.baseDisCtrl.SetValue(int(baseAngle))
         gv.iMainFrame.shoulderDisCtrl.SetValue(int(angles[0]))
         gv.iMainFrame.elbowDisCtrl.SetValue(int(angles[1]))
