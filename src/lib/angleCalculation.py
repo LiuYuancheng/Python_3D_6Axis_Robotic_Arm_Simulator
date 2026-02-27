@@ -1,59 +1,90 @@
 import numpy as np
-from itertools import product
+from scipy.optimize import fsolve
 
-def getRobotJointAngles(x, y, resolution=0.5):
+def solve_robot_arm(x, y, initial_guess=None):
     """
-    Compute robot arm joint angles (theta1, theta2, theta3) for a target (x, y) position.
-    
-    Arm segments:
-        a = sin(90 - theta1) * 1.5         (shoulder, length 1.5)
-        b = sin(90 - theta1 - theta2) * 1  (elbow, length 1.0)
-        c = sin(90 - theta1 - theta2 - theta3) * 0.5  (wrist, length 0.5)
-        distance = a + b + c
+    Solve inverse kinematics for a 3-DOF robot arm.
     
     Args:
-        x          : Target x coordinate
-        y          : Target y coordinate
-        resolution : Angle search step in degrees (smaller = more accurate, slower)
+        x: Target x-coordinate of the cube
+        y: Target y-coordinate of the cube
+        initial_guess: Optional initial guess for [theta1, theta2, theta3] in radians
     
     Returns:
-        Best (theta1, theta2, theta3) tuple in degrees, or None if unreachable
+        dict with theta1, theta2, theta3 in both radians and degrees,
+        plus verification metrics
     """
-    target_distance = np.sqrt(x**2 + y**2)
+    
+    # Calculate target distance and z-height
+    distance = np.sqrt(x**2 + y**2)
+    z_target = 2.0  # Fixed z-axis constraint
 
-    theta1_range = np.arange(-80, 80 + resolution, resolution)
-    theta2_range = np.arange(-180, 180 + resolution, resolution)
-    theta3_range = np.arange(-90, 90 + resolution, resolution)
+    # Link lengths
+    L1, L2, L3 = 1.5, 1.0, 0.5
 
-    best_solution = None
-    best_error = 0.04
+    def equations(angles):
+        t1, t2, t3 = angles
 
-    for t1, t2, t3 in product(theta1_range, theta2_range, theta3_range):
-        t1_r = np.radians(t1)
-        t2_r = np.radians(t2)
-        t3_r = np.radians(t3)
+        # Cumulative angles
+        a12  = t1 + t2
+        a123 = t1 + t2 + t3
 
-        a = np.sin(np.pi/2 - t1_r) * 1.5
-        b = np.sin(np.pi/2 - t1_r - t2_r) * 1.0
-        c = np.sin(np.pi/2 - t1_r - t2_r - t3_r) * 0.5
+        # Ground projections (x-axis)
+        a = np.cos(t1)  * L1
+        b = np.cos(a12) * L2
+        c = np.cos(a123)* L3
 
-        computed_distance = a + b + c
-        error = abs(computed_distance - target_distance)
+        # Z-axis projections
+        d = np.sin(t1)  * L1
+        e = np.sin(a12) * L2
+        f = np.sin(a123)* L3
 
-        if error < best_error:
-            best_error = error
-            best_solution = (round(t1, 2), round(t2, 2), round(t3, 2))
+        eq1 = (a + b + c) - distance   # X-axis constraint
+        eq2 = (d + e + f) - z_target   # Z-axis constraint
+        eq3 = a123                     # Wrist flat constraint (sum = 0 keeps wrist level)
 
-        if error < 0.01:  # Early exit if close enough
-            break
+        return [eq1, eq2, eq3]
 
-    print(f"Target distance : {target_distance:.4f}")
-    print(f"Best match error: {best_error:.4f}")
-    print(f"Angles => theta1: {best_solution[0]}°, theta2: {best_solution[1]}°, theta3: {best_solution[2]}°")
+    # Default initial guess if none provided
+    if initial_guess is None:
+        initial_guess = [np.pi/4, -np.pi/4, 0.0]
 
-    return best_solution
+    # Solve the system
+    solution, info, ier, msg = fsolve(equations, initial_guess, full_output=True)
+    
+    if ier != 1:
+        print(f"Warning: Solver did not fully converge — {msg}")
 
-# --- Example usage ---
+    t1, t2, t3 = solution
+
+    # Verify solution
+    a12  = t1 + t2
+    a123 = t1 + t2 + t3
+    computed_distance = np.cos(t1)*L1 + np.cos(a12)*L2 + np.cos(a123)*L3
+    computed_z       = np.sin(t1)*L1 + np.sin(a12)*L2 + np.sin(a123)*L3
+
+    return {
+        "theta1_rad": t1,          "theta1_deg": np.degrees(t1),
+        "theta2_rad": t2,          "theta2_deg": np.degrees(t2),
+        "theta3_rad": t3,          "theta3_deg": np.degrees(t3),
+        "target_distance": distance,
+        "computed_distance": computed_distance,
+        "target_z": z_target,
+        "computed_z": computed_z,
+        "distance_error": abs(computed_distance - distance),
+        "z_error": abs(computed_z - z_target),
+    }
+
+
+# ── Example usage ──────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    x, y = 1.5, -1.31
-    angles = getRobotJointAngles(x, y, resolution=5)
+    test_cases = [(2.0, 1.0), (1.5, 0.5), (2.5, 1.5)]
+
+    for x, y in test_cases:
+        print(f"\nInput  →  x={x}, y={y}")
+        result = solve_robot_arm(x, y)
+        print(f"  θ₁ = {result['theta1_deg']:+.2f}°")
+        print(f"  θ₂ = {result['theta2_deg']:+.2f}°")
+        print(f"  θ₃ = {result['theta3_deg']:+.2f}°")
+        print(f"  Distance  : target={result['target_distance']:.4f}  computed={result['computed_distance']:.4f}  err={result['distance_error']:.2e}")
+        print(f"  Z-height  : target={result['target_z']:.4f}        computed={result['computed_z']:.4f}        err={result['z_error']:.2e}")

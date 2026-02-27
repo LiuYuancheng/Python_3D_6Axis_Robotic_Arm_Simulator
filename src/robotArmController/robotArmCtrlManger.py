@@ -20,57 +20,61 @@ import asyncio
 import threading
 import numpy as np
 from itertools import product
+from scipy.optimize import fsolve
 
 import robotArmCtrlGlobal as gv
 import robotArmCtrlConst as ct
 import opcuaComm
 
-def getRobotJointAngles(x, y, resolution=0.5):
+def getRobotJointAngles(x, y, initial_guess=None):
     """
-        Compute robot arm joint angles (theta1, theta2, theta3) for a target (x, y) position.
-        
-        Arm segments:
-            a = sin(90 - theta1) * 1.5         (shoulder, length 1.5)
-            b = sin(90 - theta1 - theta2) * 1  (elbow, length 1.0)
-            c = sin(90 - theta1 - theta2 - theta3) * 0.5  (wrist, length 0.5)
-            distance = a + b + c
-        
-        Args:
-            x          : Target x coordinate
-            y          : Target y coordinate
-            resolution : Angle search step in degrees (smaller = more accurate, slower)
-        
-        Returns:
-            Best (theta1, theta2, theta3) tuple in degrees, or None if unreachable
+    Solve inverse kinematics for a 3-DOF robot arm.
+    
+    Args:
+        x: Target x-coordinate of the cube
+        y: Target y-coordinate of the cube
+        initial_guess: Optional initial guess for [theta1, theta2, theta3] in radians
+    
+    Returns:
+        dict with theta1, theta2, theta3 in both radians and degrees,
+        plus verification metrics
     """
-    target_distance = np.sqrt(x**2 + y**2)
-    if target_distance > 2.4:
-        print(f"Target distance {target_distance:.3f} exceeds max reach of 3.0")
-        return None
-    theta1_range = np.arange(-80, 80 + resolution, resolution)
-    theta2_range = np.arange(-180, 180 + resolution, resolution)
-    theta3_range = np.arange(-90, 90 + resolution, resolution)
-    best_solution = None
-    best_error = 0.04
-    for t1, t2, t3 in product(theta1_range, theta2_range, theta3_range):
-        t1_r = np.radians(t1)
-        t2_r = np.radians(t2)
-        t3_r = np.radians(t3)
-        a = np.sin(np.pi/2 - t1_r) * 1.5
-        b = np.sin(np.pi/2 - t1_r - t2_r) * 1.0
-        c = np.sin(np.pi/2 - t1_r - t2_r - t3_r) * 0.5
-        computed_distance = a + b + c
-        error = abs(computed_distance - target_distance)
-        if error < best_error:
-            best_error = error
-            best_solution = (round(t1, 2), round(t2, 2), round(t3, 2))
-
-        if error < 0.01:  # Early exit if close enough
-            break
-    #print(f"Target distance : {target_distance:.4f}")
-    #print(f"Best match error: {best_error:.4f}")
-    #print(f"Angles => theta1: {best_solution[0]}°, theta2: {best_solution[1]}°, theta3: {best_solution[2]}°")
-    return best_solution
+    # Calculate target distance and z-height
+    distance = np.sqrt(x**2 + y**2)
+    z_target = 2.0  # Fixed z-axis constraint
+    # Link lengths
+    L1, L2, L3 = 1.5, 1.0, 0.5
+    def equations(angles):
+        t1, t2, t3 = angles
+        # Cumulative angles
+        a12  = t1 + t2
+        a123 = t1 + t2 + t3
+        # Ground projections (x-axis)
+        a = np.cos(t1)  * L1
+        b = np.cos(a12) * L2
+        c = np.cos(a123)* L3
+        # Z-axis projections
+        d = np.sin(t1)  * L1
+        e = np.sin(a12) * L2
+        f = np.sin(a123)* L3
+        eq1 = (a + b + c) - distance   # X-axis constraint
+        eq2 = (d + e + f) + z_target   # Z-axis constraint (shift up by 2.0 so the cube is on the ground)
+        eq3 = a123                     # Wrist flat constraint (sum = 0 keeps wrist level)
+        return [eq1, eq2, eq3]
+    # Default initial guess if none provided
+    if initial_guess is None:
+        initial_guess = [np.pi/4, -np.pi/4, 0.0]
+    # Solve the system
+    solution, info, ier, msg = fsolve(equations, initial_guess, full_output=True)
+    if ier != 1:
+        print(f"Warning: Solver did not fully converge — {msg}")
+    t1, t2, t3 = solution
+    # Verify solution
+    a12  = t1 + t2
+    a123 = t1 + t2 + t3
+    computed_distance = np.cos(t1)*L1 + np.cos(a12)*L2 + np.cos(a123)*L3
+    computed_z       = np.sin(t1)*L1 + np.sin(a12)*L2 + np.sin(a123)*L3
+    return (int(np.degrees(t1)), int(np.degrees(t2)), int(np.degrees(t3)))
 
 #-----------------------------------------------------------------------------
 #-----------------------------------------------------------------------------
@@ -203,7 +207,8 @@ class plcDataManager(threading.Thread):
         else:
             baseAngle = math.degrees(math.atan2(y, x))
         # calculate the angle for the shoulder, elbow and wrist
-        angles = getRobotJointAngles(x, y, resolution=5)
+        #angles = getRobotJointAngles(x, y, resolution=5)
+        angles = solve_robot_arm(x, y)
         gv.iMainFrame.baseDisCtrl.SetValue(int(baseAngle))
         gv.iMainFrame.shoulderDisCtrl.SetValue(int(angles[0]))
         gv.iMainFrame.elbowDisCtrl.SetValue(int(angles[1]))

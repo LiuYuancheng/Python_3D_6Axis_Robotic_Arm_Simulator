@@ -246,17 +246,72 @@ The PLC operates in a **cyclic execution model**, similar to real industrial con
 
 ------
 
-### 5. Implementation of HMI Controller
+### 5. Implementation of HMI Remote Controller
 
-The remote controller provide the interface to display the cube position, the current sensor angle value and the target motor angle. The UI will show below:
+The **HMI Remote Controller** represents the **Level 2 (Supervisory Layer)** of the system. It provides users with an interactive interface to monitor system states, issue control commands, and execute automated robot operations via **OPC UA communication** with the PLC (as introduced in the Project design section). I re-used part of the function in my [Smart Braccio ++ IoT Robot Emulator](https://www.linkedin.com/pulse/smart-iot-robot-emulator-yuancheng-liu-2v89c) Project.
+
+The controller's interface is developed using `wxPython` and the main UI layout is shown below:
 
 ![](doc/img/s_08.png)
+
+Main UI function includes:
+
+- **PLC Connection Panel** : Allows selection of communication protocol (e.g., OPC-UA TCP, OPC-UA HTTP, UDP) and display real-time connection status. 
+- **Cube Ground Projection Pos Display** : Cube X-Y Projection on ground position
+- **Joint Angle Visualization Panels** : 6 Panels to show the 6 Axis joints' sensor and motor angles using circular gauges and the max rotation range, Green line for the sensor reading and yellow line for the current target motor angle. 
+- **Servo Motor Control Sliders and Control Buttons**  : manual adjustment of each joint, Reset simulation state, enable auto cube grab function and Load/execute predefined action sequences. 
+
+#### 5.1 Cube Position Mapping and Auto Grabbing
+
+The controller uses the cube’s ground position (x, y) to estimate required joint angles to make the arm gripper reach to the area. The main algo the controller to calculate the angles will be shown below:
+
+![](doc/img/s_09.png)
+
+The main parameter calculation algo is shown below:
+
+- **Base Rotation Angle (Axis-0)** : The base angle is calculated using θ₀ = arctan(y / x)  (If `x = 0` and `y > 0` → θ₀ = 90° and If `x = 0` and `y < 0` → θ₀ = -90°)
+- **Distance Calculation** : Cube Distance = √(x² + y²)
+- **Shoulder Rotation angle (Axis-1)** : θ₁, ground projection a = cos( θ₁ ) × 1.5
+- **Elbow Rotation angle (Axis-2)** : θ₂, ground projection b = cos( θ₁ + θ₂) × 1.0
+- **Wrist Rotation Angle angle (Axis-3)** : θ₃, ground projection c = cos( θ₁ + θ₂ + θ₃) × 0.5
+- **X-Axis Distance Relationship**: Distance ≈ a + b + c
+- **Z-Axis Projection distance 1**: d = sin( θ₁ ) x 1.5
+- **Z-Axis Projection distance 2** : e = sin( θ₁+ θ₂ ) x 1.0
+- **Z-Axis Projection distance 3** : f = sin( θ₁+ θ₂+ θ₃ ) x 0.5
+- **Z-Axis Distance Relation ship** : 2 ≈ d+e+f
+
+The detailed steps to calculate the angle is shown below, i use the [fsolve](https://docs.scipy.org/doc/scipy-1.15.2/reference/generated/scipy.optimize.fsolve.html) to fast to find a possible value :
+
+![](doc/img/s_10.png)
+
+The detail operational steps to grab the cube is shown below:
+
+- Read cube ground projection position from OPC UA PLC then calculate whether it is in the reachable area. 
+- Compute required joint angles  θ₀, θ₁, θ₂, θ₃ 
+- Send target angles to PLC to execute motion sequence, 
+- When the arm sensor shows the arm at the correct position, send the gripper closing command to grab the cue.
+
+A demonstration of this process is shown below:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 User can drag the slide to move each joint's servo motor, if UI will show whether the arm has reached to the position user configured.
 
 The controller provide the function for robot arm to auto search and grab the cube. For auto cube grab, as the cube position is know, so we can use the below algorithm and formular to calculate angle we need to set for the motors: 
 
-![](doc/img/s_09.png)
+
 
 
 
