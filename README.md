@@ -1,6 +1,6 @@
-# 3D_6Axis_Robotic_Arm_Simulator with Python-wxPython-OpenGL and OPC-UA
+# 3D_6Axis_Robotic_Arm_Simulator with Python-wxPython-OpenGL and OPC-UA [Cyber Twin]
 
-**Project Design Purpose** : The goal of this project is to develop a software-based cyber-physical twin simulation system of the 3D 6-Axis Robotic Arm in OT environment utilizing `Python`, `wxPython`, `OpenGL`, and the `OPC-UA` protocol. The system design follows the international standard automation [ISA-95 (IEC/ISO 62264)](https://www.siemens.com/en-us/technology/isa-95-framework-layers/) and serves as a sophisticated Cyber Twin, bridging the gap between virtual simulation and industrial automation. 
+**Project Design Purpose** : The goal of this project is to develop a software-based cyber-physical twin simulation system of the 3D 6-Axis Robotic Arm in OT environment utilizing `Python`, `wxPython`, `OpenGL`, and  `OPC-UA TCP` protocol. The system design follows the international standard automation [ISA-95 (IEC/ISO 62264)](https://www.siemens.com/en-us/technology/isa-95-framework-layers/) and serves as a sophisticated Cyber Twin, bridging the gap between virtual simulation and industrial automation. 
 
 ![](doc/img/logo.png)
 
@@ -9,6 +9,8 @@ The simulation system include three main modules mirror the ISA-95 automation hi
 The system overview demo is shown below:
 
 ![](doc/img/overview.gif)
+
+The project also provides the robot arm auto control function such as auto search and grab cube and it is used in some cyber exercise and CTF.
 
 ```python
 # Author:      Yuancheng Liu
@@ -26,19 +28,15 @@ The system overview demo is shown below:
 
 ### 1. Introduction
 
-The advancement of smart manufacturing and Industrial Control Systems (ICS) has driven the need for realistic, flexible, and secure simulation environments for both development and training purposes. In particular, robotic arms are widely used in modern production lines, where precise control, real-time monitoring, and reliable communication between system layers are critical. 
-
-This project, **3D_6Axis_Robotic_Arm_Simulator with Python–wxPython–OpenGL and OPC-UA**, is designed to address these needs by providing a lightweight yet functional cyber-physical simulation environment. The system enables users to visualize, monitor, and control a six-axis robotic arm while emulating real industrial communication and control workflows.
+**Abstract** : The advancement of smart manufacturing and Industrial Control Systems (ICS) has driven the need for realistic, flexible, and secure simulation environments of robot system for both development and training purposes. In particular, robotic arms are widely used in modern production lines, where precise control, real-time monitoring, and reliable communication between system layers are critical. This project **3D 6Axis Robotic Arm Simulator with Python–wxPython–OpenGL and OPC-UA** is designed to address these needs by providing a lightweight yet functional cyber-physical simulation environment. The system enables users to visualize, monitor, and control a six-axis robotic arm while emulating real industrial communication and control workflows.
 
 #### 1.1 Introduction of Project Background
 
-Two years ago I have created a project to control the Braccio Plus Robot Arm: https://www.linkedin.com/pulse/braccio-plus-robot-arm-controller-yuancheng-liu-h5gfc, but this need to hardware so it it difficult for using in cyber exercise and training which need more than one set of the environment. 
+Two years ago I have created a project to control the Braccio Plus Robot Arm: https://www.linkedin.com/pulse/braccio-plus-robot-arm-controller-yuancheng-liu-h5gfc, but this project need the hardware so it it difficult for using in cyber exercise and training which need more than one set of the system. 
 
 ![](doc/img/assemble.png)
 
-
-
-The idea for this project is inspired by Prof. Liu YaDong’s course "[A Robot Simulator Developed by Python, wxPython, VTK with OPC UA Support](https://youtu.be/zG4QcdsL4rM?si=WMlkdku4BwK09EiY)", as the course program source code is not publicly available and the 3D model resources TLS file for VTK needs to purchase, I did some modification of the design with simplified approach and free lib and added some additional functions : 
+The idea for this simulator project is inspired by Prof. Liu YaDong’s course "[A Robot Simulator Developed by Python, wxPython, VTK with OPC UA Support](https://youtu.be/zG4QcdsL4rM?si=WMlkdku4BwK09EiY)", as the course program source code is not publicly available and the 3D model resources TLS file for VTK needs trainee to purchase, I did some modification of the UI design with simplified approach and free lib and added some additional functions : 
 
 - Use `OpenGL` to replace the `VTK`  to construct a simplified 3D robot arm in the canvas 
 - A cube object and related cube position sensor are introduced to simulate realistic interaction scenarios
@@ -59,7 +57,7 @@ The platform is designed based on the ISA-95 automation hierarchy pyramid, exten
 
 1. **Robot Arm Simulator (Level 0 - Field Level)** :  This module provides a 3D OpenGL-rendered interface to visualize the physical robot arm. It simulates hardware components—such as cube position sensors,  servo motors and tactile sensors—allowing for complex actions like object manipulation (e.g., "pick-and-place" operations). It also features a localized control panel for direct manual overrides and real-time state visualization.
 2. **Robot Arm OPC-UA PLC (Level 1 - Control Level)** : Acting as the brain of the operation, this module simulates an Industrial Programmable Logic Controller (PLC). It processes incoming sensor data from the simulator and dispatches control signals back to the virtual motors, facilitating the logic loop required for autonomous or semi-autonomous motion.
-3. **User Remote Controller (Level 2 - Supervisory Level)** : This is the Human-Machine Interface (HMI) for the end-user. It establishes a secure connection to the PLC via the OPC-UA protocol, enabling remote monitoring of the arm’s telemetry and the execution of remote commands across a network.
+3. **User Remote HMI Controller (Level 2 - Supervisory Level)** : This is the Human-Machine Interface (HMI) for the end-user. It establishes a secure connection to the PLC via the OPC-UA protocol, enabling remote monitoring of the arm’s telemetry and the execution of remote commands across a network.
 
 #### 1.3 Introduction of System Use Cases
 
@@ -70,7 +68,7 @@ The modified version of this PLC controlled robot arm system is used for buildin
 - https://itrust.sutd.edu.sg/ciss-2024/
 - https://www.linkedin.com/pulse/hacking-ics-step-by-step-guide-solve-critical-it-ot-ctf-yuancheng-liu-ohjwc
 
-**Deutschlands Bester Hacker 2024 OT Challenge 1**   :
+**Deutschland's Bester Hacker 2024 OT Challenge 1**   :
 
 - https://deutschlands-bester-hacker.de/rueckblick-deutschlands-bester-hacker-2024/
 
@@ -92,33 +90,33 @@ The design is guided by the following key objectives:
 
 #### 2.2  System Workflow Overview
 
-The overall system workflow is illustrated in the diagram below, structured across three OT layers: Level 0 (simulation), Level 1 (PLC control), and Level 2 (supervisory control).
+The overall system workflow is shown in the diagram below, structured across three OT layers: Level 0 (simulation), Level 1 (PLC control), and Level 2 (supervisory control).
 
 ![](doc/img/s_04.png)
 
 **2.2.1 Level 0 → Level 1: Sensor Data Simulation (UDP-based I/O Emulation)**
 
-- The 3D Robot Arm Simulator (blue color section) continuously generates simulated field data, including: Cube position (ground position sensor) and Joint rotation angles (base, shoulder, elbow, wrist, gripper). These values are transmitted to the PLC module using **UDP messages**, which emulate real-world electrical or analog signal acquisition from physical sensors. 
-- At the OPC-UA PLC (Level 1) side, the incoming UDP data is mapped to `PLC local input variables`, then the variables are also stored in the OPC UA address space (UA Namespace / UA Objects), for UA data storage type `UA-Int16` → cube coordinate values, `UA-Float` → joint angles, `UA-Bool` → gripper pressure sensor state. 
+- The 3D Robot Arm Simulator (light blue color section) continuously generates simulated field data, including: Cube position (ground position sensor) and Joint rotation angles (base, shoulder, elbow, wrist, gripper). These values are transmitted to the PLC module using the UDP messages, which emulate real-world electrical or analog signal acquisition from physical sensors. 
+- At the OPC-UA PLC (Level 1) side, the incoming UDP data is mapped to the `PLC local input variables`, then the variables are stored in the OPC UA address space (UA Namespace / UA Objects), for the UA data storage type : `UA-Int16` → cube coordinate values, `UA-Float` → joint angles, `UA-Bool` → gripper pressure sensor state. 
 
 **2.2.2 Level 1: PLC Decision-Making and Ladder Logic Execution**
 
-The PLC module acts as the core control engine. It is implemented using a virtual PLC framework that supports: adder logic execution and OPC UA server functionality. The control loop operates as follows below steps:
+The PLC module acts as the core control engine. It is implemented using the [Virtual PLC Simulation framework](https://github.com/LiuYuancheng/PLC_and_RTU_Simulator) I developed before. The module supports: adder logic execution and OPC UA server functionality. The control loop operates as follows below steps:
 
-1. Read current sensor values (e.g., joint angles)
-2. Compare with target values (from HMI or predefined sequence)
-3. Execute control logic to determine required motion
-4. Generate output control signals (servo motor commands)
+- Step1 : Read current sensor values (e.g., joint angles)
+- Step2 : Compare with target values (from HMI or predefined sequence)
+- Step3 : Execute control logic to determine required motion
+- Step4 : Generate output control signals (servo motor commands)
 
-For example If the **target shoulder angle ≠ current angle**, the PLC continuously sends adjustment signals until the sensor feedback matches the desired position. The resulting control signals are transmitted back to the simulator via **UDP**, simulating actuator control signals to servo motors.
+For example If the `target shoulder angle` ≠ `current angle`, the PLC continuously sends adjustment signals until the sensor feedback matches the desired position. The resulting control signals are transmitted back to the simulator via UDP, simulating actuator control signals to servo motors.
 
 **2.2.3 Level 1 → Level 2: OPC UA Communication**
 
-The PLC exposes all relevant data through an **OPC UA server (OPC-UA-TCP)**, including: Joint angles, Cube position, Gripper state and Control commands. Then the **Level 2 HMI/Controller** connects as an OPC UA client and periodically retrieves updated values.
+The PLC exposes all relevant data through an OPC UA server (OPC-UA-TCP), including: Joint angles, Cube position, Gripper state and Control commands. Then the Level 2 HMI/Controller connects as an OPC UA client and periodically retrieves updated values.
 
 **2.2.4 Level 2: Supervisory Control and Visualization**
 
-The **SCADA/HMI module** provides a user-facing interface for monitoring and control. Its key functions include:
+The SCADA/HMI module provides a user-facing interface for monitoring and control and the key functions include:
 
 - Real-time Visualization: Joint angles displayed in 6-axis charts, Cube position mapped onto a 2D ground projection and System state monitoring.
 - Manual Control: Users can adjust each joint angle via sliders then motor control commands are sent to the PLC through OPC UA.
@@ -131,12 +129,12 @@ The **SCADA/HMI module** provides a user-facing interface for monitoring and con
 
 ### 3. Implementation of Robot Arm Simulator
 
-This section describes the detailed implementation of the **Robot Arm Simulator**, which represents the **Level 0 (physical/field layer)** of the system. The simulator is developed using:
+This section describes the detailed implementation of the Robot Arm Simulator, which represents the `Level 0 (physical/field layer)` of the system. The simulator is developed using:
 
 - **wxPython** → for the main GUI framework host the 3D scene and interact with user's action.
-- **OpenGL (GL / GLU / GLUT)** → for real-time 3D robot arm and scene rendering
+- **OpenGL (GL / GLU / GLUT)** → for real-time 3D robot arm and scene rendering.
 
-The overall UI layout and functional components are illustrated below:
+The overall UI layout and functional components are shown below:
 
 ![](doc/img/s_05.png)
 
@@ -144,22 +142,22 @@ The module can run independently from other system components. A built-in local 
 
 #### 3.1 3D Scene Module Implementation
 
-The 3D robot arm includes 4 cylinder Links with different length and multi-axis robotic joints (base, shoulder, elbow, wrist, and gripper) with the rotation range. 
+The 3D robot arm includes 4 cylinder links with different length and multi-axis robotic joints (base, shoulder, elbow, wrist, and gripper) with the rotation range. User can adjust the length of the links in the global file.
 
-**3.1.1 Robot Arm cylinder Links** 
+**3.1.1 Robot Arm Cylinder Links** 
 
 The robotic arm is modeled as a kinematic chain consisting of four rigid links connected one by one: 
 
-| Link Index | Color  | Connection       | Length    |
-| ---------- | ------ | ---------------- | --------- |
-| Link-00    | Red    | Base → Shoulder  | 2.0 units |
-| Link-01    | Green  | Shoulder → Elbow | 1.5 units |
-| Link-02    | Blue   | Elbow → Wrist    | 1.0 units |
-| Link-03    | Yellow | Wrist → Gripper  | 0.5 units |
+| Link Index | Color  | Connection       | Rotation Base | Length    |
+| ---------- | ------ | ---------------- | ------------- | --------- |
+| Link-00    | Red    | Base → Shoulder  | Base          | 2.0 units |
+| Link-01    | Green  | Shoulder → Elbow | Shoulder      | 1.5 units |
+| Link-02    | Blue   | Elbow → Wrist    | Elbow         | 1.0 units |
+| Link-03    | Yellow | Wrist → Gripper  | Wrist         | 0.5 units |
 
 **3.1.2 Joint and Actuator Modeling**
 
-The robot arm includes **six controllable axes**, each associated with: one simulated angle sensor (feedback), A servo motor (actuator), A defined rotation range and the motor can by controlled directly via the corresponding UI control slider in the control panel
+The robot arm includes six controllable axes, each associated with: one simulated angle sensor (feedback), A servo motor (actuator), A defined rotation range and the motor can by controlled directly via the corresponding UI control slider in the control panel.
 
 | Axis   | Function                | Surface | Sensor          | Actuator       | Range         | UI Control              |
 | ------ | ----------------------- | ------- | --------------- | -------------- | ------------- | ----------------------- |
@@ -170,7 +168,7 @@ The robot arm includes **six controllable axes**, each associated with: one simu
 | Axis-4 | Gripper rotation        | X - Y   | Angle Sensor 05 | Servo Motor 05 | (-180°, 180°) | Gripper rotation slider |
 | Axis-5 | Gripper opening/closing |         | Angle Sensor 06 | Servo Motor 06 | (0°, 100°)    | Gripper opening slider  |
 
-To simplify the simulation and avoid complex physics modeling, the gripper is constrained to always point downward along the **Z-axis**. This ensures stable object interaction without requiring a full physics engine.
+To simplify the simulation and avoid complex physics modeling, the gripper is constrained to always point downward along the Z-axis. This ensures stable object interaction (to the cube object) without requiring a full physics engine.
 
 #### 3.2 Operation Function Implementation
 
@@ -178,25 +176,25 @@ All the robot arm joint transformations are applied sequentially, forming a comp
 
 **3.2.1 Object Interaction: Grab and Release Mechanism**
 
-The simulator implements a simplified but effective grasping logic when the gripper position is within a 0.04-unit threshold of the cube:
+The simulator implements a simplified but effective grasping logic when the gripper position is within a `0.04-unit` threshold distance of the cube:
 
-- The gripper closing action triggers a virtual pressure sensor check
+- The gripper closing action triggers a virtual pressure sensor checking process.
 
-- If both gripper fingers “touch” the cube surface: The gripper motor stops closing
+- If both gripper fingers “touch” the cube surface when the gripper motor stops closing, it will trigger the gripper finger pressure sensor.
 
-- The cube is considered successfully grasped and attached to the gripper and follows its movement
-- Then he cube color changes to orange to indicate a successful grasp (As shown in the below diagram)
+- After pressure sensor triggered, the cube is considered successfully grasped and attached to the gripper and follows its movement. 
+- Then the cube color changes to orange to indicate a successful grasp (As shown in the below diagram)
 
 ![](doc/img/s_06.png)
 
-**3.2.2 Gravity Simulation**
+**3.2.2 Cube Gravity Simulation Algo** 
 
-A lightweight gravity visually effective model is implemented within the main rendering loop:
+A lightweight cube gravity visually effective model is implemented within the main rendering loop:
 
-- If the cube is not attached to the gripper : Its Z-axis position decreases gradually
-- The motion continues until the cube reaches the ground plane
+- If the cube is not attached to the gripper : Its Z-axis position decreases gradually.
+- The motion continues until the cube reaches the ground plane.
 
-**3.2.3 Sensor Feedback and Local Monitoring**
+**3.2.3 Sensor Feedback and Local Monitoring Panel**
 
 - The simulator continuously computes and displays: Gripper end-effector position (calculated via forward kinematics), Cube position (ground sensor reading) and Joint angles and gripper state.
 - All values are updated in real time and shown in the local control panel, allowing users to observe system state changes during operation.
@@ -204,8 +202,8 @@ A lightweight gravity visually effective model is implemented within the main re
 
 **3.2.4 External Communication Interface (UDP API)**
 
-- To integrate with higher-level modules, the simulator includes a **UDP server thread** that handles: Sensor data transmission (simulated wire connect to PLC inputs contact) and Motor control commands (simulated wire connect to PLC outputs coil)
-- Additionally, users can develop custom programs to interact with the simulator via the provided API in Library: `lib/physicalWorldComm.py` to send control commands, retrieve sensor data, monitor system state
+- To integrate with higher-level modules, the simulator includes a UDP server thread that handles: Sensor data transmission (simulated wire connect to PLC inputs contact) and Motor control commands (simulated wire connect to PLC outputs coil).
+- Additionally, users can develop custom programs to interact with the simulator via the provided API in Library: `lib/physicalWorldComm.py` to send control commands, retrieve sensor data, monitor system state.
 
 
 
@@ -213,9 +211,7 @@ A lightweight gravity visually effective model is implemented within the main re
 
 ### 4. Implementation of OPC-UA PLC
 
-The OPC-UA PLC module represents the Level 1 (Control Layer) of the system and serves as the central decision-making unit. It is responsible for processing sensor data, executing control logic, and coordinating communication between the physical simulator (Level 0) and the supervisory controller (Level 2).
-
-For The OPCUA plc simulation module I use this project [Python Virtual PLC Simulator with IEC 62541 OPC-UA-TCP Communication Protocol](https://www.linkedin.com/pulse/python-virtual-plc-simulator-iec-62541-opc-ua-tcp-protocol-liu-pm1pc) to implement the ladder logic control, UA data storage and process. For the detail you can check this link: https://github.com/LiuYuancheng/PLC_and_RTU_Simulator/tree/main/OPCUA_PLC_Simulator
+The OPC-UA PLC module represents the Level 1 (Control Layer) of the system and serves as the central decision-making unit. It is responsible for processing sensor data, executing control logic, and coordinating communication between the physical simulator (Level 0) and the supervisory controller (Level 2). The ladder logic control, UA data storage and process of the OPCUA PLC simulation module is implement with project [Python Virtual PLC Simulator with IEC 62541 OPC-UA-TCP Communication Protocol](https://www.linkedin.com/pulse/python-virtual-plc-simulator-iec-62541-opc-ua-tcp-protocol-liu-pm1pc) . For the detail you can check this link: https://github.com/LiuYuancheng/PLC_and_RTU_Simulator/tree/main/OPCUA_PLC_Simulator
 
 #### 4.1 OPC UA Variable Mapping
 
@@ -333,7 +329,9 @@ For System Configuration and Usage, Please refer to the [System_Usage_Manual.md]
 
 ------
 
-### 7. Reference Doc
+### 7. Summary and Reference 
+
+![](doc/img/title.png)
 
 The **3D 6-Axis Robotic Arm Simulator** successfully demonstrates the integration of high-performance visualization and industrial-standard communication within a modular **Cyber-Physical System**. By aligning the architecture with the **ISA-95 hierarchy**, the project creates a realistic environment where Level 0 physics, Level 1 PLC logic, and Level 2 SCADA/HMI interaction coexist seamlessly. Utilizing **Python**, **wxPython**, and **OpenGL** allows for a lightweight yet powerful simulation of complex kinematics and sensor feedback, while the implementation of **OPC-UA** ensures the system remains relevant for modern smart manufacturing and OT cybersecurity research. Ultimately, this simulator serves as an accessible, hardware-independent platform for developers to test control algorithms and for security professionals to explore industrial protocol vulnerabilities in a safe, controlled sandbox.
 
