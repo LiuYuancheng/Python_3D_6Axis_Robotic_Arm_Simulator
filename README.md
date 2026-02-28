@@ -213,7 +213,7 @@ A lightweight cube gravity visually effective model is implemented within the ma
 
 The OPC-UA PLC module represents the Level 1 (Control Layer) of the system and serves as the central decision-making unit. It is responsible for processing sensor data, executing control logic, and coordinating communication between the physical simulator (Level 0) and the supervisory controller (Level 2). The ladder logic control, UA data storage and process of the OPCUA PLC simulation module is implement with project [Python Virtual PLC Simulator with IEC 62541 OPC-UA-TCP Communication Protocol](https://www.linkedin.com/pulse/python-virtual-plc-simulator-iec-62541-opc-ua-tcp-protocol-liu-pm1pc) . For the detail you can check this link: https://github.com/LiuYuancheng/PLC_and_RTU_Simulator/tree/main/OPCUA_PLC_Simulator
 
-#### 4.1 OPC UA Variable Mapping
+#### 4.1 OPC UA Variable Table
 
 | UA-Object                      | Variable Name | UA_Type    | PLC I/O Type | Related simulator Component          |
 | ------------------------------ | ------------- | ---------- | ------------ | ------------------------------------ |
@@ -240,13 +240,13 @@ The OPC-UA PLC module represents the Level 1 (Control Layer) of the system and s
 | HMIRequest - VN_Motor5_TGT     | motor4Target  | `UA-Int16` | N.A          | N.A (Request from Remote Controller) |
 | HMIRequest - VN_Motor6_TGT     | motor6Target  | `UA-Int16` | N.A          | N.A (Request from Remote Controller) |
 
-#### 4.2 PLC Control Cycle Workflow
+#### 4.2 PLC Control Clock Cycle 
 
-The PLC operates in a **cyclic execution model**, similar to real industrial controllers. Each cycle consists of data acquisition, processing, and output update. The workflow is illustrated below:
+The PLC operates in a periodic cyclic execution loop, similar to real industrial controllers. Each clock cycle consists of data acquisition, processing, and output update. The workflow is shown in the below workflow diagram:
 
 ![](doc/img/s_07.png)
 
-- **Input Data Acquisition (Fetch Sensors)**: The PLC simulates the collection of field data by fetching the current 3D cube coordinates and the 6-axis joint angles from the robot arm simulator.
+- **Input Data Acquisition (Fetch Sensors)**: The PLC simulates the collection of field data by fetching the current 3D cube coordinates and the 6-axis joint angles sensor data from the robot arm simulator.
 - **OPC-UA Server Update (Variable Sync)**: The fetched sensor data is mapped to internal variables and pushed to the OPC-UA server to ensure the "Cyber Twin" reflects the physical state.
 - **One-Time Initialization (Sync Parameters)**: During the first cycle (`initFlag`), the system synchronizes all internal control parameters with the OPC-UA server to ensure consistent starting states.
 - **Control Logic Execution (Read & Compare)**: The PLC reads the target control values (e.g., desired motor angles or gripper states) from the OPC-UA server and compares them against its local internal state.
@@ -259,50 +259,50 @@ The PLC operates in a **cyclic execution model**, similar to real industrial con
 
 ### 5. Implementation of HMI Remote Controller
 
-The **HMI Remote Controller** represents the **Level 2 (Supervisory Layer)** of the system. It provides users with an interactive interface to monitor system states, issue control commands, and execute automated robot operations via **OPC UA communication** with the PLC (as introduced in the Project design section). I re-used part of the function in my [Smart Braccio ++ IoT Robot Emulator](https://www.linkedin.com/pulse/smart-iot-robot-emulator-yuancheng-liu-2v89c) Project.
+The HMI Remote Controller represents the Level 2 (Supervisory Layer) of the system. It provides users with an interactive interface to monitor system states, issue control commands, and execute automated robot operations via OPC-UA-TCP communication with the PLC (as introduced in the Project design section). I re-used part of the function and UI panels in my [Smart Braccio ++ IoT Robot Emulator](https://www.linkedin.com/pulse/smart-iot-robot-emulator-yuancheng-liu-2v89c) project.
 
 The controller's interface is developed using `wxPython` and the main UI layout is shown below:
 
 ![](doc/img/s_08.png)
 
-Main UI function includes:
+The main UI function includes:
 
 - **PLC Connection Panel** : Allows selection of communication protocol (e.g., OPC-UA TCP, OPC-UA HTTP, UDP) and display real-time connection status. 
-- **Cube Ground Projection Pos Display** : Cube X-Y Projection on ground position
-- **Joint Angle Visualization Panels** : 6 Panels to show the 6 Axis joints' sensor and motor angles using circular gauges and the max rotation range, Green line for the sensor reading and yellow line for the current target motor angle. 
-- **Servo Motor Control Sliders and Control Buttons**  : manual adjustment of each joint, Reset simulation state, enable auto cube grab function and Load/execute predefined action sequences. 
+- **Cube Ground Projection Pos Display** : Cube X-Y Projection on ground position and the max range the arm can touch.
+- **Joint Angle Visualization Panels** : 6 Panels to show the 6 Axis joints' sensor and motor angles using circular gauges and the max rotation range, "Green-needle" for the sensor reading and "Yellow-needle" for the current target motor angle. 
+- **Servo Motor Control Sliders and Control Buttons** : Manual adjustment of each joint control motor, Reset simulation state, enable auto cube grab function and Load/Execute predefined action sequences. 
 
 #### 5.1 Cube Position Mapping and Auto Grabbing
 
-The controller uses the cube’s ground position (x, y) to estimate required joint angles to make the arm gripper reach to the area. The main algo the controller to calculate the angles will be shown below:
+To auto search and grab the objects in the scene, the controller uses the cube’s ground position `(x, y)` to estimate required joint angles to make the arm gripper reach to the position (area within the threshold, current threshold distance = 0.04 unit). The main algo to calculate the four theta angles is shown below:
 
 ![](doc/img/s_09.png)
 
 The main parameter calculation algo is shown below:
 
 - **Base Rotation Angle (Axis-0)** : The base angle is calculated using θ₀ = arctan(y / x)  (If `x = 0` and `y > 0` → θ₀ = 90° and If `x = 0` and `y < 0` → θ₀ = -90°)
-- **Distance Calculation** : Cube Distance = √(x² + y²)
-- **Shoulder Rotation angle (Axis-1)** : θ₁, ground projection a = cos( θ₁ ) × 1.5
-- **Elbow Rotation angle (Axis-2)** : θ₂, ground projection b = cos( θ₁ + θ₂) × 1.0
-- **Wrist Rotation Angle angle (Axis-3)** : θ₃, ground projection c = cos( θ₁ + θ₂ + θ₃) × 0.5
-- **X-Axis Distance Relationship**: Distance ≈ a + b + c
-- **Z-Axis Projection distance 1**: d = sin( θ₁ ) x 1.5
-- **Z-Axis Projection distance 2** : e = sin( θ₁+ θ₂ ) x 1.0
-- **Z-Axis Projection distance 3** : f = sin( θ₁+ θ₂+ θ₃ ) x 0.5
-- **Z-Axis Distance Relation ship** : 2 ≈ d+e+f
+- **Distance Calculation** : Cube distance to robot arm base `k = √(x² + y²)`
+- **Shoulder Rotation angle (Axis-1)** : θ₁, ground projection distance  `a = cos( θ₁ ) × 1.5`
+- **Elbow Rotation angle (Axis-2)** : θ₂, ground projection distance `b = cos( θ₁ + θ₂) × 1.0`
+- **Wrist Rotation Angle angle (Axis-3)** : θ₃, ground projection distance `c = cos( θ₁ + θ₂ + θ₃) × 0.5`
+- **X-Axis Distance Relationship**: Distance `k'≈ a + b + c`
+- **Z-Axis Projection distance 1**: `d = sin( θ₁ ) x 1.5`
+- **Z-Axis Projection distance 2** : `e = sin( θ₁+ θ₂ ) x 1.0`
+- **Z-Axis Projection distance 3** : `f = sin( θ₁+ θ₂+ θ₃ ) x 0.5`
+- **Z-Axis Distance Relation ship** : arm base distance `2 ≈ d + e + f`
 
-The detailed steps to calculate the angle is shown below, i use the [fsolve](https://docs.scipy.org/doc/scipy-1.15.2/reference/generated/scipy.optimize.fsolve.html) to fast to find a possible value :
+The detailed steps to calculate the angle is shown below, I used the scipy [fsolve](https://docs.scipy.org/doc/scipy-1.15.2/reference/generated/scipy.optimize.fsolve.html) to fast to find one possible value :
 
 ![](doc/img/s_10.png)
 
-The detail operational steps to grab the cube is shown below:
+The detail operational steps to grab the cube object is shown below:
 
-- Read cube ground projection position from OPC UA PLC then calculate whether it is in the reachable area. 
-- Compute required joint angles  θ₀, θ₁, θ₂, θ₃ 
-- Send target angles to PLC to execute motion sequence, 
+- Read cube ground projection position from OPC-UA PLC then calculate whether it is in the reachable area.
+- If the cube object is reachable, then compute required joint angles  θ₀, θ₁, θ₂, θ₃ . 
+- Send motor angles target change comment to PLC to execute motion sequence. 
 - When the arm sensor shows the arm at the correct position, send the gripper closing command to grab the cue.
 
-A demonstration of this process is shown below (Users can trigger this function via the **“Auto Grab Cube”** button.):
+A demonstration of this process is shown below (Users can trigger this function via the “Auto Grab Cube” button.):
 
 ![](doc/img/autoGrab.gif)
 
@@ -310,7 +310,7 @@ A demonstration of this process is shown below (Users can trigger this function 
 
 The controller supports loading and repeat executing predefined motion sequences from a JSON configuration.
 
-**Example Task List Json File**:
+**Example Task List JSON File**:
 
 ```json
 [('grip', '220'), ('base', '90'), ('shld', '155'), ('elbw', '90'), ('wrtP', '205'), ('wrtR', '150'),('grip', '160'),('elbw', '130'),('base', '180'),('grip', '220'),]
@@ -318,14 +318,14 @@ The controller supports loading and repeat executing predefined motion sequences
 
 **Execution Flow**: 
 
-- User create the sequence Json file and put it folder "`src/robotArmController/Scenarios`".
-- Presses “Execute Scenario” button then the controller will sends commands one by one to the PLC. For the execution interval, it waits for each motion to complete then proceeds to the next action. 
+- User create the sequence JSON file and put it in folder "`src/robotArmController/Scenarios`".
+- Presses “Execute Scenario” button, then the controller will sends commands one by one to the PLC. For the command execution interval, it waits for each motion to complete then proceeds to the next action. 
 
 ------
 
 ### 6. System Setup and Usage
 
-For System Configuration and Usage, Please refer to the [System_Usage_Manual.md](System_Usage_Manual.md)
+For the system configuration and usage, please refer to the user manual document:  [System_Usage_Manual.md](System_Usage_Manual.md)
 
 ------
 
@@ -334,6 +334,8 @@ For System Configuration and Usage, Please refer to the [System_Usage_Manual.md]
 ![](doc/img/title.png)
 
 The **3D 6-Axis Robotic Arm Simulator** successfully demonstrates the integration of high-performance visualization and industrial-standard communication within a modular **Cyber-Physical System**. By aligning the architecture with the **ISA-95 hierarchy**, the project creates a realistic environment where Level 0 physics, Level 1 PLC logic, and Level 2 SCADA/HMI interaction coexist seamlessly. Utilizing **Python**, **wxPython**, and **OpenGL** allows for a lightweight yet powerful simulation of complex kinematics and sensor feedback, while the implementation of **OPC-UA** ensures the system remains relevant for modern smart manufacturing and OT cybersecurity research. Ultimately, this simulator serves as an accessible, hardware-independent platform for developers to test control algorithms and for security professionals to explore industrial protocol vulnerabilities in a safe, controlled sandbox.
+
+**Main Reference**: 
 
 - https://www.linkedin.com/pulse/braccio-plus-robot-arm-controller-yuancheng-liu-h5gfc
 - https://www.linkedin.com/pulse/smart-iot-robot-emulator-yuancheng-liu-2v89c
