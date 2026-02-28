@@ -1,0 +1,88 @@
+[
+    {
+        "act": "RST",
+        "key": null,
+        "val": null
+    },
+    {
+        "act": "MOV",
+        "key": "wrtR",
+        "val": "270"
+    },
+
+    {
+        "act": "MOV",
+        "key": "grip",
+        "val": "220"
+    },
+
+    {
+        "act": "MOV",
+        "key": "wrtP",
+        "val": "100"
+    },
+
+    {
+        "act": "MOV",
+        "key": "wrtP",
+        "val": "140"
+    },
+
+    {
+        "act": "MOV",
+        "key": "wrtP",
+        "val": "200"
+    },
+    {
+        "act": "MOV",
+        "key": "wrtP",
+        "val": "140"
+    },
+
+    {
+        "act": "MOV",
+        "key": "wrtP",
+        "val": "100"
+    },
+
+    {
+        "act": "MOV",
+        "key": "wrtP",
+        "val": "140"
+    },
+
+    {
+        "act": "MOV",
+        "key": "wrtP",
+        "val": "200"
+    },
+    {
+        "act": "MOV",
+        "key": "wrtP",
+        "val": "140"
+    },
+
+    {
+        "act": "MOV",
+        "key": "wrtP",
+        "val": "100"
+    },
+
+    {
+        "act": "MOV",
+        "key": "wrtP",
+        "val": "140"
+    },
+
+    {
+        "act": "MOV",
+        "key": "wrtP",
+        "val": "200"
+    },
+    {
+        "act": "MOV",
+        "key": "wrtP",
+        "val": "140"
+    }
+
+]

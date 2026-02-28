@@ -1,6 +1,6 @@
 # 3D_6Axis_Robotic_Arm_Simulator System Usage Manual 
 
-This document will introduce the detailed steps to setup the system in you servers. 
+This document is the user manual to introduce the detailed steps to setup the system in you servers. The system can be configured in one computer or 3 different nodes (VMs/Dockers) with 1 ~ 2 subnets. 
 
 ![](doc/img/logo.png)
 
@@ -20,7 +20,7 @@ This document will introduce the detailed steps to setup the system in you serve
 
 #### 1.1 Network Configuration Topology
 
-The 3 program in the system can be executed in one computer/VM, but for using in attack training or integrate with other sytem, we prefer you config it is 3 different VM with below network topology:
+The three program in the system can be executed in one computer/VM, but for using in attack training or integrate with other system, we prefer you config it is 3 different VM with below network topology (2 isolated subnet):
 
 ![](doc/img/um_00.png)
 
@@ -42,7 +42,15 @@ For attack and defense cyber exercise or CTF, we prefer the first topology.
 
 **Program Source File List** 
 
-**Lib**
+Library Modules 
+
+| Program File               | Execution Env | Description                                                  |
+| -------------------------- | ------------- | ------------------------------------------------------------ |
+| `lib/ConfigLoader.py`      | python 3.7 +  | Provide API to load the not stand text format config file's data. |
+| `lib/Log.py`               | python 3.7 +  | Provide the additional log function to do the program execution log archiving feature. |
+| `lib/UdpCom.py`            | python 3.7 +  | Provide UDP communication API in the distribution system.    |
+| `lib/physicalWorldComm.py` | python 3.7 +  | Provide the API for PLC to connect to the physical world or simulation module. |
+| `lib/opcuaComm.py`         | python 3.7 +  | Provide the IEC62541 OPC-UA TCP client and server communication API. |
 
 
 
