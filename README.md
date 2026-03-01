@@ -24,6 +24,26 @@ The project also provides the robot arm auto control function such as auto searc
 
 [TOC]
 
+- [3D_6Axis_Robotic_Arm_Simulator with Python-wxPython-OpenGL and OPC-UA [Cyber Twin]](#3d-6axis-robotic-arm-simulator-with-python-wxpython-opengl-and-opc-ua--cyber-twin-)
+    + [1. Introduction](#1-introduction)
+      - [1.1 Introduction of Project Background](#11-introduction-of-project-background)
+      - [1.2 Introduction of System Architecture](#12-introduction-of-system-architecture)
+      - [1.3 Introduction of System Use Cases](#13-introduction-of-system-use-cases)
+    + [2. Project Design](#2-project-design)
+      - [2.1 System Design Objectives](#21-system-design-objectives)
+      - [2.2  System Workflow Overview](#22--system-workflow-overview)
+    + [3. Implementation of Robot Arm Simulator](#3-implementation-of-robot-arm-simulator)
+      - [3.1 3D Scene Module Implementation](#31-3d-scene-module-implementation)
+      - [3.2 Operation Function Implementation](#32-operation-function-implementation)
+    + [4. Implementation of OPC-UA PLC](#4-implementation-of-opc-ua-plc)
+      - [4.1 OPC UA Variable Table](#41-opc-ua-variable-table)
+      - [4.2 PLC Control Clock Cycle](#42-plc-control-clock-cycle)
+    + [5. Implementation of HMI Remote Controller](#5-implementation-of-hmi-remote-controller)
+      - [5.1 Cube Position Mapping and Auto Grabbing](#51-cube-position-mapping-and-auto-grabbing)
+      - [5.2 Predefined Action Sequence Execution](#52-predefined-action-sequence-execution)
+    + [6. System Setup and Usage](#6-system-setup-and-usage)
+    + [7. Summary and Reference](#7-summary-and-reference)
+
 ------
 
 ### 1. Introduction
@@ -61,7 +81,9 @@ The platform is designed based on the ISA-95 automation hierarchy pyramid, exten
 
 #### 1.3 Introduction of System Use Cases
 
-The modified version of this PLC controlled robot arm system is used for building the OT challenges in the below CTF competition:![](doc/img/useCase.png)
+The modified version of this PLC controlled robot arm system is used for building the OT challenges in the below CTF competition:
+
+![](doc/img/useCase.png)
 
 **CISS 2024 Control The Orthanc Obstacles Challenge** : 
 
@@ -335,7 +357,7 @@ For the system configuration and usage, please refer to the user manual document
 
 The **3D 6-Axis Robotic Arm Simulator** successfully demonstrates the integration of high-performance visualization and industrial-standard communication within a modular **Cyber-Physical System**. By aligning the architecture with the **ISA-95 hierarchy**, the project creates a realistic environment where Level 0 physics, Level 1 PLC logic, and Level 2 SCADA/HMI interaction coexist seamlessly. Utilizing **Python**, **wxPython**, and **OpenGL** allows for a lightweight yet powerful simulation of complex kinematics and sensor feedback, while the implementation of **OPC-UA** ensures the system remains relevant for modern smart manufacturing and OT cybersecurity research. Ultimately, this simulator serves as an accessible, hardware-independent platform for developers to test control algorithms and for security professionals to explore industrial protocol vulnerabilities in a safe, controlled sandbox.
 
-**Main Reference**: 
+**Main Related Project and Reference**: 
 
 - https://www.linkedin.com/pulse/braccio-plus-robot-arm-controller-yuancheng-liu-h5gfc
 - https://www.linkedin.com/pulse/smart-iot-robot-emulator-yuancheng-liu-2v89c
