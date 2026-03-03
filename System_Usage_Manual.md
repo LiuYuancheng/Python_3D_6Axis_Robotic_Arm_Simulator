@@ -14,6 +14,15 @@ This document is the user manual to introduce the detailed steps to setup the sy
 
 [TOC]
 
+- [3D_6Axis_Robotic_Arm_Simulator System Usage Manual](#3d-6axis-robotic-arm-simulator-system-usage-manual)
+    + [1. System Setup](#1-system-setup)
+      - [1.1 Network Configuration Topology](#11-network-configuration-topology)
+      - [1.2 System Configuration](#12-system-configuration)
+    + [2. System Deployment And Usage](#2-system-deployment-and-usage)
+      - [2.1 Execute the robot arm simulator module](#21-execute-the-robot-arm-simulator-module)
+      - [2.2 Execute the robot arm control PLC module](#22-execute-the-robot-arm-control-plc-module)
+      - [2.3 Execute the Remote HMI Controller](#23-execute-the-remote-hmi-controller)
+
 ------
 
 ### 1. System Setup
@@ -51,6 +60,41 @@ Library Modules
 | `lib/UdpCom.py`            | python 3.7 +  | Provide UDP communication API in the distribution system.    |
 | `lib/physicalWorldComm.py` | python 3.7 +  | Provide the API for PLC to connect to the physical world or simulation module. |
 | `lib/opcuaComm.py`         | python 3.7 +  | Provide the IEC62541 OPC-UA TCP client and server communication API. |
+
+Robot Arm Simulator 
+
+| Program File                                             | Execution Env | Description                                                  |
+| -------------------------------------------------------- | ------------- | ------------------------------------------------------------ |
+| `runRA_Simulator.bat`                                    | WIN_11        | Program Windows-OS auto execution bat file.                  |
+| `robotArmSimulator/robotArmAgents.py`                    | python 3.7 +  | Module includes all the agent classes to define the visible object (Cube, RobotArm, Env) class |
+| `robotArmSimulator/robotArmCtrlMgr.py`                   | python 3.7 +  | The Data manager for receiving the control command from the remote controller such as PLC and and sending the sensor data. |
+| `robotArmSimulator/robotArmGlobal.py`                    | python 3.7 +  | Program global parameters storage module.                    |
+| `robotArmSimulator/robotArmSimulatorConfig_template.txt` | text          | Configuration file template                                  |
+| `robotArmSimulator/robotArmSimulator.py`                 | python 3.7 +  | Main simulator execution file.                               |
+| `robotArmSimulator/runWinApp.bat`                        | WIN_11        | Program Windows-OS auto execution bat file.                  |
+
+Robot Arm Control PLC
+
+| Program File                             | Execution Env  | Description                                              |
+| ---------------------------------------- | -------------- | -------------------------------------------------------- |
+| `runRA_PLC.bat`                          | WIN_11         | Program Windows-OS auto execution bat file.              |
+| `robotArmCtrlPLC/opcuaPlcConst.py`       | python 3.8.4 + | The constant module for the robot arm control OPCUA PLC. |
+| `robotArmCtrlPLC/opcuaPlcGlobal.py`      | python 3.8.4 + | Program global parameters storage module.                |
+| `robotArmCtrlPLC/plcConfig_template.txt` | text           | Configuration file template                              |
+| `robotArmCtrlPLC/opcuaPlcRun.py`         | python 3.8.4 + | Main PLC simulation execution file.                      |
+| `robotArmCtrlPLC/runWinApp.bat`          | WIN_11         | Program Windows-OS auto execution bat file.              |
+
+Robot Arm Remote Controller
+
+| Program File                               | Execution Env  | Description                                                  |
+| ------------------------------------------ | -------------- | ------------------------------------------------------------ |
+| `runRA_PLC.bat`                            | WIN_11         | Program Windows-OS auto execution bat file.                  |
+| `robotArmController/robotArmController.py` | python 3.8.4 + | Main remote controller execution file.                       |
+| `robotArmController/robotArmCtrlConst.py`  | python 3.8.4 + | The constant module for the robot arm remote controller.     |
+| `robotArmController/robotArmCtrlGlobal.py` | python 3.8.4 + | Program global parameters storage module.                    |
+| `robotArmController/robotArmCtrlManger.py` | python 3.8.4 + | Data manager module also used for communicating with the robot arm control OPCUA PLC. |
+| `robotArmController/robotArmCtrlPanel.py`  | python 3.8.4 + | Provide the motor controller and potentiometer reading display panel for the controller. |
+| `robotArmController/runWinApp.bat`         | WIN_11         | Program Windows-OS auto execution bat file.                  |
 
 
 

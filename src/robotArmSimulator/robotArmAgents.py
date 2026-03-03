@@ -2,7 +2,7 @@
 #-----------------------------------------------------------------------------
 # Name:        robotArmAgents.py
 #
-# Purpose:     This module incudes all the agent classes to define the visible 
+# Purpose:     This module includes all the agent classes to define the visible 
 #              object (Cube, RobotArm, Env) shown in the robot arm simulator main 
 #              canvas window.
 #

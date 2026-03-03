@@ -353,7 +353,11 @@ For the system configuration and usage, please refer to the user manual document
 
 ### 7. Summary and Reference 
 
-![](doc/img/title.png)
+Project Summary Video:
+
+[![Watch the demo](doc/img/title.png)](https://youtu.be/Id3tBvNlzc4?si=pdiII1w45f2kjvS1)
+
+ https://youtu.be/Id3tBvNlzc4?si=pdiII1w45f2kjvS1
 
 The **3D 6-Axis Robotic Arm Simulator** successfully demonstrates the integration of high-performance visualization and industrial-standard communication within a modular **Cyber-Physical System**. By aligning the architecture with the **ISA-95 hierarchy**, the project creates a realistic environment where Level 0 physics, Level 1 PLC logic, and Level 2 SCADA/HMI interaction coexist seamlessly. Utilizing **Python**, **wxPython**, and **OpenGL** allows for a lightweight yet powerful simulation of complex kinematics and sensor feedback, while the implementation of **OPC-UA** ensures the system remains relevant for modern smart manufacturing and OT cybersecurity research. Ultimately, this simulator serves as an accessible, hardware-independent platform for developers to test control algorithms and for security professionals to explore industrial protocol vulnerabilities in a safe, controlled sandbox.
 
