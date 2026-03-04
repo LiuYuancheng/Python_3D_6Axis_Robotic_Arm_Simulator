@@ -129,9 +129,9 @@ Then double click the auto execution file `src/runRA_Simulator.bat` or run comma
 python3 robotArmSimulator.py
 ```
 
-Then you will see the 3D UI show up.
+Then you will see the 3D UI show up as below:
 
-
+![](doc/img/s_01.png)
 
 #### 2.2 Execute the robot arm control PLC module
 

@@ -10,7 +10,7 @@ The system overview demo is shown below:
 
 ![](doc/img/overview.gif)
 
-The project also provides the robot arm auto control function such as auto search and grab cube and it is used in some cyber exercise and CTF.
+The project also provides the robot arm auto control function such as auto search and grab cube and it is used in some cyber exercise and CTF. For project general introduction video, you can refer to : https://youtu.be/5Xs8u70xDU0?si=sI-1UrBRYCnRudUB
 
 ```python
 # Author:      Yuancheng Liu
@@ -56,7 +56,7 @@ Two years ago I have created a project to control the Braccio Plus Robot Arm: ht
 
 ![](doc/img/assemble.png)
 
-The idea for this simulator project is inspired by Prof. Liu YaDong’s course "[A Robot Simulator Developed by Python, wxPython, VTK with OPC UA Support](https://youtu.be/zG4QcdsL4rM?si=WMlkdku4BwK09EiY)", as the course program source code is not publicly available and the 3D model resources TLS file for VTK needs trainee to purchase, I did some modification of the UI design with simplified approach and free lib and added some additional functions : 
+The idea for this simulator project is inspired by Prof. Liu YaDong’s course "[A Robot Simulator Developed by Python, wxPython, VTK with OPC UA Support](https://youtu.be/zG4QcdsL4rM?si=WMlkdku4BwK09EiY)", as the course program source code is not publicly available and the 3D model resources stl (STereoLithography) file for VTK needs trainee to purchase, I did some modification of the UI design with simplified approach and free lib and added some additional functions : 
 
 - Use `OpenGL` to replace the `VTK`  to construct a simplified 3D robot arm in the canvas 
 - A cube object and related cube position sensor are introduced to simulate realistic interaction scenarios
@@ -237,30 +237,30 @@ The OPC-UA PLC module represents the Level 1 (Control Layer) of the system and s
 
 #### 4.1 OPC UA Variable Table
 
-| UA-Object                      | Variable Name | UA_Type    | PLC I/O Type | Related simulator Component          |
-| ------------------------------ | ------------- | ---------- | ------------ | ------------------------------------ |
-| RobotArmCtrl - VN_GRIPPER_CTRL | gripperCtrl   | `UA-Bool`  | PLC Input    | Gripper pressure sensor              |
-| RobotArmCtrl - VN_CUBE_POS_X   | cubePosX      | `UA-Float` | PLC Input    | Cube position sensor                 |
-| RobotArmCtrl - VN_CUBE_POS_Y   | cubePosY      | `UA-Float` | PLC Input    | Cube position sensor                 |
-| RobotArmCtrl - VN_CUBE_POS_Z   | cubePosZ      | `UA-Float` | PLC Input    | Cube position sensor                 |
-| RobotArmCtrl - VN_ARM_ANGLE_1  | armAngle1     | `UA-Float` | PLC Input    | Base rotation angle sensor           |
-| RobotArmCtrl - VN_ARM_ANGLE_2  | armAngle2     | `UA-Float` | PLC Input    | Shoulder rotation angle sensor       |
-| RobotArmCtrl - VN_ARM_ANGLE_3  | armAngle3     | `UA-Float` | PLC Input    | Elbow rotation angle sensor          |
-| RobotArmCtrl - VN_ARM_ANGLE_4  | armAngle4     | `UA-Float` | PLC Input    | Wrist rotation angle sensor          |
-| RobotArmCtrl - VN_ARM_ANGLE_5  | armAngle5     | `UA-Float` | PLC Input    | Gripper rotation angle sensor        |
-| RobotArmCtrl - VN_ARM_ANGLE_6  | armAngle6     | `UA-Float` | PLC Input    | Gripper opening/closing angle sensor |
-| RobotArmCtrl - VN_MOTOR1_CTRL  | motor1Ctrl    | `UA-Int16` | PLC Output   | Servo Motor 01                       |
-| RobotArmCtrl - VN_MOTOR2_CTRL  | motor2Ctrl    | `UA-Int16` | PLC Output   | Servo Motor 02                       |
-| RobotArmCtrl - VN_MOTOR3_CTRL  | motor3Ctrl    | `UA-Int16` | PLC Output   | Servo Motor 03                       |
-| RobotArmCtrl - VN_MOTOR4_CTRL  | motor4Ctrl    | `UA-Int16` | PLC Output   | Servo Motor 04                       |
-| RobotArmCtrl - VN_MOTOR5_CTRL  | motor5Ctrl    | `UA-Int16` | PLC Output   | Servo Motor 05                       |
-| RobotArmCtrl - VN_MOTOR5_CTRL  | motor6Ctrl    | `UA-Int16` | PLC Output   | Servo Motor 06                       |
-| HMIRequest - VN_Motor1_TGT     | motor1Target  | `UA-Int16` | N.A          | N.A (Request from Remote Controller) |
-| HMIRequest - VN_Motor2_TGT     | motor2Target  | `UA-Int16` | N.A          | N.A (Request from Remote Controller) |
-| HMIRequest - VN_Motor3_TGT     | motor3Target  | `UA-Int16` | N.A          | N.A (Request from Remote Controller) |
-| HMIRequest - VN_Motor4_TGT     | motor4Target  | `UA-Int16` | N.A          | N.A (Request from Remote Controller) |
-| HMIRequest - VN_Motor5_TGT     | motor4Target  | `UA-Int16` | N.A          | N.A (Request from Remote Controller) |
-| HMIRequest - VN_Motor6_TGT     | motor6Target  | `UA-Int16` | N.A          | N.A (Request from Remote Controller) |
+| UA-Object - UA Variable Key      | Variable Name | UA_Type    | PLC I/O Type | Related simulator Component          |
+| -------------------------------- | ------------- | ---------- | ------------ | ------------------------------------ |
+| RobotArmCtrl - `VN_GRIPPER_CTRL` | gripperCtrl   | `UA-Bool`  | PLC Input    | Gripper pressure sensor              |
+| RobotArmCtrl - `VN_CUBE_POS_X`   | cubePosX      | `UA-Float` | PLC Input    | Cube position sensor                 |
+| RobotArmCtrl - `VN_CUBE_POS_Y`   | cubePosY      | `UA-Float` | PLC Input    | Cube position sensor                 |
+| RobotArmCtrl - `VN_CUBE_POS_Z`   | cubePosZ      | `UA-Float` | PLC Input    | Cube position sensor                 |
+| RobotArmCtrl - `VN_ARM_ANGLE_1`  | armAngle1     | `UA-Float` | PLC Input    | Base rotation angle sensor           |
+| RobotArmCtrl - `VN_ARM_ANGLE_2`  | armAngle2     | `UA-Float` | PLC Input    | Shoulder rotation angle sensor       |
+| RobotArmCtrl - `VN_ARM_ANGLE_3`  | armAngle3     | `UA-Float` | PLC Input    | Elbow rotation angle sensor          |
+| RobotArmCtrl - `VN_ARM_ANGLE_4`  | armAngle4     | `UA-Float` | PLC Input    | Wrist rotation angle sensor          |
+| RobotArmCtrl - `VN_ARM_ANGLE_5`  | armAngle5     | `UA-Float` | PLC Input    | Gripper rotation angle sensor        |
+| RobotArmCtrl - `VN_ARM_ANGLE_6`  | armAngle6     | `UA-Float` | PLC Input    | Gripper opening/closing angle sensor |
+| RobotArmCtrl - `VN_MOTOR1_CTRL`  | motor1Ctrl    | `UA-Int16` | PLC Output   | Servo Motor 01                       |
+| RobotArmCtrl - `VN_MOTOR2_CTRL`  | motor2Ctrl    | `UA-Int16` | PLC Output   | Servo Motor 02                       |
+| RobotArmCtrl - `VN_MOTOR3_CTRL`  | motor3Ctrl    | `UA-Int16` | PLC Output   | Servo Motor 03                       |
+| RobotArmCtrl - `VN_MOTOR4_CTRL`  | motor4Ctrl    | `UA-Int16` | PLC Output   | Servo Motor 04                       |
+| RobotArmCtrl - `VN_MOTOR5_CTRL`  | motor5Ctrl    | `UA-Int16` | PLC Output   | Servo Motor 05                       |
+| RobotArmCtrl - `VN_MOTOR5_CTRL`  | motor6Ctrl    | `UA-Int16` | PLC Output   | Servo Motor 06                       |
+| HMIRequest - `VN_Motor1_TGT`     | motor1Target  | `UA-Int16` | N.A          | N.A (Request from Remote Controller) |
+| HMIRequest - `VN_Motor2_TGT`     | motor2Target  | `UA-Int16` | N.A          | N.A (Request from Remote Controller) |
+| HMIRequest - `VN_Motor3_TGT`     | motor3Target  | `UA-Int16` | N.A          | N.A (Request from Remote Controller) |
+| HMIRequest - `VN_Motor4_TGT`     | motor4Target  | `UA-Int16` | N.A          | N.A (Request from Remote Controller) |
+| HMIRequest - `VN_Motor5_TGT`     | motor4Target  | `UA-Int16` | N.A          | N.A (Request from Remote Controller) |
+| HMIRequest - `VN_Motor6_TGT`     | motor6Target  | `UA-Int16` | N.A          | N.A (Request from Remote Controller) |
 
 #### 4.2 PLC Control Clock Cycle 
 

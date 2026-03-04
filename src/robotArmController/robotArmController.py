@@ -35,6 +35,7 @@ class UIFrame(wx.Frame):
         wx.Frame.__init__(self, parent, id, title, size=FRAME_SIZE)
         self.SetBackgroundColour(wx.Colour(200, 210, 200))
         self.SetIcon(wx.Icon(gv.ICO_PATH))
+        self.SetTransparent(180)
         self.connected = False
         # load the action config files
         self.actCfgFiles = [filename for filename in os.listdir(gv.SCE_FD) if filename.endswith('.json')]
